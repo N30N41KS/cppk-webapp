@@ -9,16 +9,27 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-        /* АДАПТИВНЫЕ ПЕРЕМЕННЫЕ ПОД ТЕМУ ТЕЛЕГРАМА */
+        /* ТЕМНАЯ ТЕМА ПО УМОЛЧАНИЮ (SAVE EYES) */
         :root {
             --primary: #3db449; /* Зеленый ЦППК */
-            --bg-color: var(--tg-theme-bg-color, #f5f5f5);
-            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
-            --text-color: var(--tg-theme-text-color, #1c1b1f);
-            --hint-color: var(--tg-theme-hint-color, #79747e);
-            --input-bg: var(--tg-theme-bg-color, #fafafa);
-            --outline: var(--tg-theme-hint-color, #e8def8);
+            --bg-color: #1a1c1e;
+            --card-bg: #212429;
+            --text-color: #e2e2e6;
+            --hint-color: #909094;
+            --outline: #44474e;
+            --input-bg: #1a1c1e;
             --radius: 28px;
+        }
+
+        /* Автоматическая подстройка под тему Telegram */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-color: #f5f5f5;
+                --card-bg: #ffffff;
+                --text-color: #1c1b1f;
+                --input-bg: #fafafa;
+                --outline: #d1d1d1;
+            }
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
@@ -26,11 +37,11 @@
         body { 
             background: var(--bg-color); 
             color: var(--text-color); 
-            transition: background 0.3s, color 0.3s;
+            transition: all 0.3s ease;
             padding-bottom: 20px;
         }
 
-        /* Навигация в стиле CyberCore */
+        /* Навигация в твоем стиле CyberCore */
         .mui-nav {
             display: flex; justify-content: center; padding: 16px;
             background: var(--card-bg);
@@ -42,12 +53,11 @@
 
         .container { max-width: 500px; margin: 0 auto; padding: 20px; }
 
-        /* Карточка CyberCore / MD3 */
         .mui-card {
             background: var(--card-bg);
             border-radius: var(--radius);
             padding: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             border: 1px solid var(--outline);
             animation: fadeIn 0.4s ease-out;
         }
@@ -56,123 +66,7 @@
 
         h2 { margin-bottom: 20px; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
 
-        label { font-size: 0.85rem; color: var(--hint-color); margin-bottom: 6px; display: block; margin-left: 4px; }
+        label { font-size: 0.85rem; color: var(--hint-color); margin: 0 0 8px 4px; display: block; }
 
-        /* Поля ввода */
         input, select, textarea {
-            width: 100%; padding: 14px; border-radius: 16px;
-            border: 1px solid var(--outline); 
-            background: var(--input-bg);
-            color: var(--text-color);
-            font-size: 1rem; outline: none; margin-bottom: 15px;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
-
-        /* Список станций */
-        #stationList { height: 200px; }
-
-        /* Кнопка CyberCore */
-        .mui-btn {
-            background: var(--primary); 
-            color: #ffffff; 
-            border: none;
-            padding: 18px; width: 100%; border-radius: 16px;
-            font-weight: 700; cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(61, 180, 73, 0.3);
-            display: flex; justify-content: center; align-items: center; gap: 8px;
-        }
-
-        .mui-btn:active { transform: scale(0.97); }
-    </style>
-</head>
-<body>
-
-<nav class="mui-nav">
-    <div style="font-weight:700; color:var(--primary); font-size: 1.2rem; letter-spacing: 1px;">ЦППК МОНИТОРИНГ</div>
-</nav>
-
-<main class="container">
-    <div class="mui-card">
-        <h2><span class="material-symbols-rounded" style="color:var(--primary)">edit_document</span> Новый рапорт</h2>
-        
-        <label>Поиск станции:</label>
-        <input type="text" id="stationSearch" placeholder="Начните вводить название..." oninput="filterStations()">
-
-        <label>Выберите из списка:</label>
-        <select id="stationList" size="8">
-            <option value="Авиамоторная (Линия 8)">🟡 Авиамоторная (Линия 8)</option>
-            <option value="Авиамоторная (БКЛ)">🔘 Авиамоторная (БКЛ)</option>
-            <option value="Выхино (ТКЛ)">🟣 Выхино (ТКЛ)</option>
-            <option value="Нижегородская (БКЛ)">🔘 Нижегородская (БКЛ)</option>
-            <option value="Нижегородская (МЦК)">⚪ Нижегородская (МЦК)</option>
-            <option value="Нижегородская (Некрасовская)">💖 Нижегородская</option>
-            <option value="Парк культуры (Линия 1)">🔴 Парк культуры (Л1)</option>
-            <option value="Парк культуры (Кольцевая)">🟤 Парк культуры (КЛ)</option>
-            <option value="Электрозаводская (Линия 3)">🔵 Электрозаводская (Л3)</option>
-            <option value="Электрозаводская (БКЛ)">🔘 Электрозаводская (БКЛ)</option>
-            <option value="Курская (Кольцевая)">🟤 Курская (КЛ)</option>
-            <option value="Курская (Линия 3)">🔵 Курская (Л3)</option>
-            <option value="Комсомольская (Линия 1)">🔴 Комсомольская (Л1)</option>
-            <option value="Комсомольская (Кольцевая)">🟤 Комсомольская (КЛ)</option>
-            <option value="Выхино (D3)">🚆 Выхино (D3)</option>
-            <option value="Чухлинка (D4)">🚆 Чухлинка (D4)</option>
-            <option value="Нижегородская (D4)">🚆 Нижегородская (D4)</option>
-            <option value="Курская (D2/D4)">🚆 Курская (D2/D4)</option>
-            <option value="Площадь трех вокзалов (D2/D4)">🚆 Пл. трех вокзалов</option>
-        </select>
-
-        <label>Что произошло?</label>
-        <textarea id="description" rows="4" placeholder="Опишите проблему для ИИ..."></textarea>
-
-        <button class="mui-btn" onclick="sendData()">
-            <span class="material-symbols-rounded">send</span>
-            Отправить рапорт
-        </button>
-    </div>
-</main>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    
-    // Автоматическая подстройка под ночную/дневную тему ТГ
-    function applyTheme() {
-        document.documentElement.style.setProperty('--bg-color', tg.backgroundColor || '#f5f5f5');
-        document.documentElement.style.setProperty('--card-bg', tg.secondaryBackgroundColor || '#ffffff');
-        document.documentElement.style.setProperty('--text-color', tg.themeParams.text_color || '#1c1b1f');
-    }
-    
-    tg.onEvent('themeChanged', applyTheme);
-    applyTheme();
-
-    // Твой поиск (теперь работает стабильно)
-    function filterStations() {
-        const query = document.getElementById('stationSearch').value.toLowerCase();
-        const select = document.getElementById('stationList');
-        const options = select.options;
-
-        for (let i = 0; i < options.length; i++) {
-            const text = options[i].text.toLowerCase();
-            options[i].style.display = text.includes(query) ? "" : "none";
-        }
-    }
-
-    function sendData() {
-        const station = document.getElementById('stationList').value;
-        const description = document.getElementById('description').value;
-
-        if (!station || !description) {
-            tg.HapticFeedback.notificationOccurred('error');
-            alert("Пожалуйста, выберите станцию и введите описание.");
-            return;
-        }
-
-        const data = { station, description };
-        tg.HapticFeedback.impactOccurred('medium');
-        tg.sendData(JSON.stringify(data));
-    }
-</script>
-</body>
-</html>
+            width: 100%; padding: 14px; border-radius
