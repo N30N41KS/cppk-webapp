@@ -2,181 +2,127 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ЖД Поддержка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заявки ЖД</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --md-sys-color-primary: #006493;
-            --md-sys-color-on-primary: #ffffff;
-            --md-sys-color-primary-container: #cae6ff;
-            --md-sys-color-on-primary-container: #001e30;
-            --md-sys-color-surface: #fdfcff;
-            --md-sys-color-on-surface: #1a1c1e;
-            --md-sys-color-surface-variant: #e2e2e9;
-            --md-sys-color-outline: #72777f;
-            --md-sys-color-background: #fdfcff;
-            --shape-large: 24px;
-            --shape-medium: 16px;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --md-sys-color-primary: #8dcdff;
-                --md-sys-color-on-primary: #00344f;
-                --md-sys-color-primary-container: #004b70;
-                --md-sys-color-on-primary-container: #cae6ff;
-                --md-sys-color-surface: #1a1c1e;
-                --md-sys-color-on-surface: #e2e2e5;
-                --md-sys-color-surface-variant: #42474e;
-                --md-sys-color-outline: #8c9199;
-                --md-sys-color-background: #1a1c1e;
-            }
-        }
-
+        /* Стили адаптируются под темную/светлую тему пользователя в Телеграме */
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--tg-theme-bg-color, var(--md-sys-color-background));
-            color: var(--tg-theme-text-color, var(--md-sys-color-on-surface));
-            margin: 0; padding: 16px; box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 20px;
+            margin: 0;
         }
-
-        .card {
-            background-color: var(--tg-theme-secondary-bg-color, var(--md-sys-color-surface));
-            border-radius: var(--shape-large);
-            padding: 24px; margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
         }
-
-        h2 { margin-top: 0; font-size: 22px; font-weight: 600; margin-bottom: 20px; }
-        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
-        label { font-size: 14px; margin-bottom: 8px; font-weight: 500; opacity: 0.8; }
-        
-        select, textarea {
-            font-family: inherit;
-            background-color: var(--tg-theme-bg-color, var(--md-sys-color-surface-variant));
-            color: var(--tg-theme-text-color, var(--md-sys-color-on-surface));
-            border: 1px solid var(--md-sys-color-outline);
-            border-radius: var(--shape-medium);
-            padding: 16px; font-size: 16px; outline: none; appearance: none;
+        .form-group {
+            margin-bottom: 20px;
         }
-
-        select:focus, textarea:focus { border-color: var(--md-sys-color-primary); }
-        textarea { resize: vertical; min-height: 100px; }
-
-        .btn-submit {
-            background-color: var(--tg-theme-button-color, var(--md-sys-color-primary));
-            color: var(--tg-theme-button-text-color, var(--md-sys-color-on-primary));
-            border: none; border-radius: 100px; padding: 16px 24px;
-            font-size: 16px; font-weight: 600; width: 100%; cursor: pointer;
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+        input, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 8px;
+            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            color: var(--tg-theme-text-color, #000000);
+            font-size: 16px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #3390ec);
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Новая заявка</h2>
-        <form id="ticketForm">
-            
-            <div class="form-group">
-                <label for="system">Линия / Направление</label>
-                <select id="system" required onchange="updateStations()">
-                    <option value="" disabled selected>Выберите линию...</option>
-                    <option value="mcd1">МЦД-1 (Белорусско-Савеловский)</option>
-                    <option value="mcd3">МЦД-3 (Ленинградско-Казанский)</option>
-                    <option value="mck">МЦК (Московское центральное кольцо)</option>
-                    <option value="metro1">Сокольническая линия (Метро)</option>
-                </select>
-            </div>
+    <h2>🚨 Сообщить о поломке</h2>
 
-            <div class="form-group">
-                <label for="station">Станция</label>
-                <select id="station" required disabled>
-                    <option value="" disabled selected>Сначала выберите линию</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="category">Категория проблемы</label>
-                <select id="category" required>
-                    <option value="" disabled selected>Выберите категорию...</option>
-                    <option value="Оборудование (турникеты, билетоматы)">Оборудование (турникеты, автоматы)</option>
-                    <option value="Эскалаторы и лифты">Эскалаторы и лифты</option>
-                    <option value="Санитарное состояние">Уборка и санитария</option>
-                    <option value="Освещение и электрика">Освещение и электрика</option>
-                    <option value="Навигация и табло">Навигация и табло</option>
-                    <option value="Подвижной состав (в поезде)">Подвижной состав (в поезде)</option>
-                    <option value="Работа персонала">Работа персонала</option>
-                    <option value="Железнодорожные пути">Железнодорожные пути</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Описание проблемы своими словами</label>
-                <textarea id="description" placeholder="Например: На платформе в сторону Москвы огромная лужа, невозможно пройти..." required></textarea>
-            </div>
-
-            <button type="button" class="btn-submit" onclick="submitData()">Отправить заявку</button>
-        </form>
+    <div class="form-group">
+        <label for="station">Станция (Метро, МЦК, МЦД):</label>
+        <input type="text" id="station" list="stations-list" placeholder="Начните вводить название..." autocomplete="off">
+        <datalist id="stations-list"></datalist>
     </div>
 
+    <div class="form-group">
+        <label for="description">Что сломалось?</label>
+        <textarea id="description" rows="5" placeholder="Например: Не работает правый турникет на выход, мигает красный крест..."></textarea>
+    </div>
+
+    <button id="submit-btn">Отправить рапорт</button>
+
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        // Инициализируем Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Открываем на весь экран
 
-        // БАЗА ДАННЫХ СТАНЦИЙ (Сюда можно добавлять остальные)
-        const stationsDB = {
-            mcd1: ["Лобня", "Долгопрудная", "Беговая", "Белорусская", "Славянский бульвар", "Одинцово"],
-            mcd3: ["Крюково", "Ховрино", "Останкино", "Электрозаводская", "Выхино", "Люберцы-1", "Раменское"],
-            mck: ["Нижегородская", "Площадь Гагарина", "Лужники", "Кутузовская", "Деловой центр", "Владыкино"],
-            metro1: ["Бульвар Рокоссовского", "Сокольники", "Комсомольская", "Охотный ряд", "Парк культуры", "Саларьево"]
-        };
+        // Полная база станций (МЦД, МЦК, Метро)
+        const moscowStations = [
+            "Одинцово", "Баковка", "Сколково", "Немчиновка", "Сетунь", "Рабочий Посёлок", "Кунцево", "Славянский бульвар", "Фили", "Тестовская", "Беговая", "Белорусская", "Савёловская", "Дмитровская", "Гражданская", "Красный Балтиец", "Стрешнево", "Щукинская", "Тушинская", "Волоколамская", "Пенягино", "Павшино", "Красногорская", "Опалиха", "Аникеевка", "Нахабино",
+            "Подольск", "Силикатная", "Остафьево", "Щербинка", "Бутово", "Битца", "Красный Строитель", "Покровское", "Царицыно", "Москворечье", "Курьяново", "Перерва", "Депо", "Печатники", "Текстильщики", "Новохохловская", "Калитники", "Москва-Товарная", "Курская", "Площадь трёх вокзалов", "Рижская", "Марьина Роща",
+            "Зеленоград-Крюково", "Сходня", "Подрезково", "Новоподрезково", "Молжаниново", "Химки", "Левобережная", "Ховрино", "Грачёвская", "Моссельмаш", "Лихоборы", "Петровско-Разумовская", "Останкино", "Электрозаводская", "Сортировочная", "Авиамоторная", "Андроновка", "Перово", "Плющево", "Вешняки", "Выхино", "Косино", "Ухтомская", "Люберцы", "Панки", "Томилино", "Красково", "Малаховка", "Удельная", "Быково", "Ильинская", "Отдых", "Кратово", "Есенинская", "Фабричная", "Раменское", "Ипподром",
+            "Апрелевка", "Победа", "Крёкшино", "Санино", "Кокошкино", "Толстопальцево", "Внуково", "Мичуринец", "Переделкино", "Мещерская", "Очаково", "Аминьевская", "Матвеевская", "Минская", "Поклонная", "Кутузовская", "Серп и Молот", "Нижегородская", "Чухлинка", "Кусково", "Новогиреево", "Реутов", "Никольское", "Салтыковская", "Кучино", "Ольгино", "Железнодорожная",
+            "Окружная", "Владыкино", "Ботанический сад", "Ростокино", "Белокаменная", "Бульвар Рокоссовского", "Локомотив", "Измайлово", "Соколиная Гора", "Шоссе Энтузиастов", "Угрешская", "Дубровка", "Автозаводская", "ЗИЛ", "Верхние Котлы", "Крымская", "Площадь Гагарина", "Лужники", "Деловой центр", "Шелепиха", "Хорошёво", "Зорге", "Панфиловская", "Балтийская", "Коптево",
+            "Охотный Ряд", "Библиотека имени Ленина", "Кропоткинская", "Парк культуры", "Фрунзенская", "Спортивная", "Воробьёвы горы", "Университет", "Проспект Вернадского", "Юго-Западная", "Тропарёво", "Румянцево", "Саларьево", "Комсомольская", "Красные Ворота", "Чистые пруды", "Лубянка", "Киевская", "Смоленская", "Арбатская", "Площадь Революции", "Бауманская", "Семёновская", "Партизанская", "Измайловская", "Первомайская", "Щёлковская",
+            "Павелецкая", "Таганская", "Новокузнецкая", "Театральная", "Тверская", "Маяковская", "Динамо", "Аэропорт", "Сокол", "Войковская", "Водный стадион", "Речной вокзал", "Третьяковская", "Китай-город", "Тургеневская", "Сухаревская", "Проспект Мира", "Алексеевская", "ВДНХ", "Свиблово", "Бабушкинская", "Медведково",
+            "Цветной бульвар", "Менделеевская", "Тимирязевская", "Отрадное", "Бибирево", "Алтуфьево", "Чеховская", "Боровицкая", "Полянка", "Серпуховская", "Тульская", "Нагатинская", "Нагорная", "Нахимовский проспект", "Севастопольская", "Чертановская", "Южная", "Пражская", "Улица Академика Янгеля", "Аннино", "Бульвар Дмитрия Донского"
+        ];
 
-        const systemSelect = document.getElementById('system');
-        const stationSelect = document.getElementById('station');
-
-        function updateStations() {
-            const selectedSystem = systemSelect.value;
-            stationSelect.innerHTML = '<option value="" disabled selected>Выберите станцию...</option>';
-            
-            if (selectedSystem && stationsDB[selectedSystem]) {
-                stationSelect.disabled = false;
-                stationsDB[selectedSystem].forEach(station => {
-                    let option = document.createElement('option');
-                    option.value = station;
-                    option.textContent = station;
-                    stationSelect.appendChild(option);
-                });
-            } else {
-                stationSelect.disabled = true;
-            }
+        // Загружаем станции в умный список (datalist)
+        function loadStations() {
+            const dataList = document.getElementById('stations-list');
+            dataList.innerHTML = ''; 
+            // Сортируем по алфавиту
+            moscowStations.sort().forEach(station => {
+                let option = document.createElement('option');
+                option.value = station;
+                dataList.appendChild(option);
+            });
         }
 
-        function submitData() {
-            const sysElem = document.getElementById('system');
-            const statElem = document.getElementById('station');
-            const catElem = document.getElementById('category');
-            
-            const systemName = sysElem.options[sysElem.selectedIndex]?.text;
-            const stationName = statElem.value;
-            const categoryName = catElem.value;
-            const description = document.getElementById('description').value;
+        document.addEventListener('DOMContentLoaded', loadStations);
 
-            if (!systemName || !stationName || !categoryName || !description) {
-                tg.showAlert("Пожалуйста, заполните все поля.");
+        // Обработка нажатия на кнопку "Отправить"
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            let stationInput = document.getElementById('station').value.trim();
+            let descInput = document.getElementById('description').value.trim();
+
+            if (!descInput) {
+                tg.showAlert("Пожалуйста, опишите проблему, чтобы мы могли отправить бригаду!");
                 return;
             }
 
-            // Отправляем готовый русский текст, чтобы бэкенду было проще
-            const data = {
-                system: systemName,
-                station: stationName,
-                category: categoryName,
-                description: description
+            // Упаковываем данные в JSON
+            let dataToSend = {
+                station: stationInput || "Не указана",
+                description: descInput
             };
 
-            tg.sendData(JSON.stringify(data));
-        }
+            // Отправляем данные боту и закрываем Web App
+            tg.sendData(JSON.stringify(dataToSend));
+            tg.close();
+        });
     </script>
 </body>
 </html>
