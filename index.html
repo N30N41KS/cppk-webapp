@@ -12,7 +12,7 @@
             --text-color: #111820;
             --input-bg: #f0f2f5;
             --hint-color: #6b7280;
-            --primary-color: #005AAB; /* Стартовый синий ЦППК */
+            --primary-color: #005AAB; 
             --button-text: #ffffff;
             --border-color: #e5e7eb;
             --shadow: rgba(0, 0, 0, 0.1);
@@ -29,7 +29,7 @@
             --shadow: rgba(0, 0, 0, 0.4);
         }
 
-        /* Плавный переход для эффекта ХАМЕЛЕОНА */
+        /* Плавный переход для Хамелеона */
         * { transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; }
 
         html { background-color: var(--bg-color); height: 100%; overflow: hidden; }
@@ -39,7 +39,9 @@
             margin: 0; padding: 20px 15px; box-sizing: border-box; height: 100%; overflow-y: auto;
         }
 
-        h2 { text-align: center; margin-bottom: 20px; font-size: 22px; color: var(--primary-color); font-weight: 700; }
+        /* Статичный и строгий заголовок */
+        h2 { text-align: center; margin-bottom: 20px; font-size: 22px; color: var(--text-color); font-weight: 700; }
+        
         .form-group { position: relative; margin-bottom: 18px; }
         label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--hint-color); font-size: 14px; margin-left: 4px; }
 
@@ -54,39 +56,37 @@
             box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05); 
         }
 
-        /* КНОПКА И АНИМАЦИИ */
+        /* КНОПКА */
         button { 
             position: relative; width: 100%; padding: 16px; 
             background-color: var(--primary-color); color: var(--button-text); 
             border: none; border-radius: 12px; font-size: 17px; font-weight: 600; 
             cursor: pointer; margin-top: 10px;
             box-shadow: 0 4px 15px var(--shadow);
-            overflow: hidden;
+            white-space: nowrap;
         }
 
         button:active:not(.train-depart) { transform: scale(0.98); }
 
-        /* КЛАСС ДЛЯ УЛЕТАЮЩЕГО ПОЕЗДА */
+        /* ИСПРАВЛЕННАЯ АНИМАЦИЯ ПОЕЗДА */
         .train-depart {
-            animation: trainZoom 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+            animation: trainDrive 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             pointer-events: none;
-            color: transparent !important; /* Прячем текст */
-            border-radius: 50px !important; /* Делаем капсулу */
+            color: transparent !important;
         }
 
         .train-depart::after {
-            content: "🚆";
+            content: "🚄"; /* Скоростной поезд */
             position: absolute; left: 50%; top: 50%;
             transform: translate(-50%, -50%);
             font-size: 28px;
             color: #ffffff !important;
         }
 
-        @keyframes trainZoom {
-            0% { transform: scale(1); }
-            15% { transform: scale(0.95) translateX(-15px); } /* Чуть сдаем назад перед разгоном */
-            40% { transform: scale(0.9) translateX(20px) skewX(-10deg); } /* Начинаем движение */
-            100% { transform: scale(0.8) translateX(150vw) skewX(-20deg); opacity: 0; } /* Улетаем за экран */
+        @keyframes trainDrive {
+            0% { transform: translateX(0) scale(1); border-radius: 12px; }
+            20% { transform: translateX(-15px) scale(0.95); border-radius: 25px; } /* Небольшой откат назад перед стартом */
+            100% { transform: translateX(200vw) scale(0.95); border-radius: 25px; } /* Резко улетает за правый край */
         }
 
         /* Выпадающий список */
@@ -107,7 +107,7 @@
 </head>
 <body>
 
-    <h2 id="main-title">🚨 Отчетность ЦППК</h2>
+    <h2>🚨 Отчетность ЦППК</h2>
 
     <div class="form-group">
         <label>Где произошел инцидент?</label>
@@ -117,7 +117,7 @@
 
     <div class="form-group">
         <label>Детали проблемы</label>
-        <textarea id="description" rows="4" placeholder="Напр: неисправность турникета на южном вестибюле..."></textarea>
+        <textarea id="description" rows="4" placeholder="Напр: неисправность турникета..."></textarea>
     </div>
 
     <button id="submit-btn">Отправить диспетчеру</button>
@@ -126,7 +126,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Тема Telegram
         function applyTheme() {
             if (tg.colorScheme === 'dark') document.body.classList.add('dark-theme');
             else document.body.classList.remove('dark-theme');
@@ -134,7 +133,6 @@
         tg.onEvent('themeChanged', applyTheme);
         applyTheme();
 
-        // ПАЛИТРА ХАМЕЛЕОНА (Официальные цвета веток МосМетро и МЦД)
         const lineColors = {
             "1": "#EF161E", "2": "#2DBE2C", "3": "#0078BF", "4": "#00BFFF", "5": "#8D5B2D",
             "6": "#ED9121", "7": "#800080", "8": "#FFD702", "8А": "#FFD702", "9": "#999999",
@@ -173,14 +171,13 @@
                 stations.push({
                     name: `${name} (${line.startsWith('D') ? '' : 'Линия '}${line})`,
                     icon: `img/${line}.svg`,
-                    lineId: line // Добавили ID линии для Хамелеона
+                    lineId: line
                 });
             });
         }
 
         const searchInput = document.getElementById('station-search');
         const dropdown = document.getElementById('custom-stations-list');
-        const title = document.getElementById('main-title');
         let selected = "";
 
         function render(val) {
@@ -197,13 +194,12 @@
                     selected = s.name;
                     dropdown.classList.remove('active');
                     
-                    // ХАМЕЛЕОН В ДЕЙСТВИИ
+                    // ХАМЕЛЕОН: Меняем цвет интерфейса
                     const newColor = lineColors[s.lineId] || '#005AAB';
                     document.documentElement.style.setProperty('--primary-color', newColor);
-                    tg.HapticFeedback.selectionChanged(); // Тактильный щелчок при смене цвета
                     
-                    // Меняем заголовок
-                    title.innerText = `Ветка: ${s.lineId.startsWith('D') ? 'МЦД ' : ''}${s.lineId}`;
+                    // Более сильная тактильная отдача при выборе
+                    tg.HapticFeedback.impactOccurred('rigid'); 
                 };
                 dropdown.appendChild(div);
             });
@@ -222,23 +218,25 @@
             }
 
             const btn = this;
-            // ЗАПУСК ПОЕЗДА
+            
+            // Запуск мощной вибрации сразу по клику
+            tg.HapticFeedback.impactOccurred('heavy');
             btn.classList.add('train-depart');
             
-            // СТУК КОЛЕС ПОЕЗДА (Вибрация)
+            // Вибрация колес поезда
             let rumbles = 0;
             const rumbleInterval = setInterval(() => {
-                tg.HapticFeedback.impactOccurred('light');
+                tg.HapticFeedback.impactOccurred('heavy');
                 rumbles++;
-                if (rumbles > 4) clearInterval(rumbleInterval);
-            }, 150);
+                if (rumbles > 3) clearInterval(rumbleInterval);
+            }, 200);
 
-            // ЖДЕМ, ПОКА ПОЕЗД УЛЕТИТ (1.2 секунды), И ЗАКРЫВАЕМ ПРИЛОЖЕНИЕ
+            // Закрываем окно через 1 секунду
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
                 tg.sendData(JSON.stringify({ station: selected, description: desc }));
                 tg.close();
-            }, 1200);
+            }, 1000);
         };
     </script>
 </body>
