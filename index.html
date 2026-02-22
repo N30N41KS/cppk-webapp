@@ -8,92 +8,103 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
         :root {
-            --primary: #3db449;       /* Зеленый ЦППК */
-            --surface: #f5f5f5;       /* Фон MD3 */
-            --container: #ffffff;     /* Карточки */
-            --outline: #e8def8;
-            --text-main: #1c1b1f;
-            --radius: 28px;           /* Твои фирменные скругления */
+            --primary: #3db449;
+            --surface: #f5f5f5;
+            --container: #ffffff;
+            --radius: 28px;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
-
-        body { background: var(--surface); color: var(--text-main); }
-
-        /* Твоя навигация CyberCore (Glassmorphism) */
+        body { background: var(--surface); color: #1c1b1f; }
+        
         .mui-nav {
-            display: flex; justify-content: center; align-items: center;
-            padding: 16px; background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100;
-            border-bottom: 2px solid var(--primary);
+            display: flex; justify-content: center; padding: 16px;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px);
+            position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--primary);
         }
-
-        .logo { font-weight: 700; font-size: 1.2rem; color: var(--primary); letter-spacing: 1px; }
-
+        .logo { font-weight: 700; color: var(--primary); font-size: 1.2rem; }
+        
         .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-
-        /* Твоя карточка MUI-Card */
+        
         .mui-card {
-            background: var(--container);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid var(--outline);
-            animation: fadeIn 0.5s ease forwards;
+            background: var(--container); border-radius: var(--radius);
+            padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e8def8; animation: fadeIn 0.5s ease;
         }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { color: var(--text-main); font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-
-        .input-group { margin-bottom: 20px; }
-        
-        label { display: block; margin-bottom: 8px; font-weight: 500; color: #49454f; font-size: 0.9rem; }
-
-        /* Поля ввода в стиле CyberCore */
         input, select, textarea {
             width: 100%; padding: 14px; border-radius: 16px;
-            border: 1px solid var(--outline); background: #fafafa;
-            font-size: 1rem; outline: none; transition: 0.3s;
+            border: 1px solid #e8def8; background: #fafafa;
+            font-size: 1rem; outline: none; transition: 0.3s; margin-bottom: 15px;
         }
-
         input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; }
 
-        /* Список станций (сделаем его повыше) */
-        #station { height: 180px; }
-
-        /* Кнопка CyberCore */
         .mui-btn {
             background: var(--primary); color: white; border: none;
             padding: 18px; width: 100%; border-radius: 16px;
-            font-weight: 700; font-size: 1rem; cursor: pointer;
-            text-transform: uppercase; transition: 0.3s;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
+            font-weight: 700; cursor: pointer; text-transform: uppercase;
         }
-
-        .mui-btn:active { transform: scale(0.98); opacity: 0.9; }
     </style>
 </head>
 <body>
 
-    <nav class="mui-nav">
-        <div class="logo">ЦППК | МОНИТОРИНГ</div>
-    </nav>
+<nav class="mui-nav">
+    <div class="logo">ЦППК | МОНИТОРИНГ</div>
+</nav>
 
-    <main class="container">
-        <div class="mui-card">
-            <h2><span class="material-symbols-rounded" style="color: var(--primary);">report</span> Создать рапорт</h2>
-            
-            <div class="input-group">
-                <label>Поиск станции:</label>
-                <input type="text" id="stationSearch" placeholder="Введите название (напр. Авиа...)" onkeyup="filterStations()">
-            </div>
+<main class="container">
+    <div class="mui-card">
+        <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary)">report</span> Создать рапорт
+        </h2>
+        
+        <label>Поиск станции:</label>
+        <input type="text" id="stationSearch" placeholder="Введите название..." onkeyup="filterStations()">
 
-            <div class="input-group">
-                <label>Выберите из списка:</label>
-                <select id="station" size="10">
-                    <option value="Авиамоторная (Линия 8)">🟡 Авиамоторная (Линия 8)</option>
-                    <option value="Авиамоторная (БКЛ)">🔘 Авиамоторная (БКЛ)</option>
-                    <option value="Выхино (Т
+        <label>Выберите из списка:</label>
+        <select id="station" size="8">
+            </select>
+
+        <label>Описание поломки:</label>
+        <textarea id="description" rows="4" placeholder="Что именно не работает?"></textarea>
+
+        <button class="mui-btn" onclick="sendData()">Отправить рапорт</button>
+    </div>
+</main>
+
+<script src="stations.js"></script>
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // 1. Автоматическая загрузка ВСЕХ станций при старте
+    const select = document.getElementById('station');
+    STATIONS_LIST.forEach(name => {
+        let opt = document.createElement('option');
+        opt.value = name;
+        opt.innerHTML = name;
+        select.appendChild(opt);
+    });
+
+    // 2. Поиск (твоя логика из Wiki)
+    function filterStations() {
+        const filter = document.getElementById('stationSearch').value.toLowerCase();
+        const options = select.options;
+        for (let i = 0; i < options.length; i++) {
+            options[i].style.display = options[i].text.toLowerCase().includes(filter) ? "" : "none";
+        }
+    }
+
+    function sendData() {
+        const station = select.value;
+        const description = document.getElementById('description').value;
+        if (!station || !description) {
+            alert("Заполните все поля!");
+            return;
+        }
+        tg.sendData(JSON.stringify({ station, description }));
+    }
+</script>
+</body>
+</html>
