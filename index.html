@@ -8,87 +8,45 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        :root { --primary: #3db449; --surface: #f5f5f5; --radius: 28px; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
-        body { background: var(--surface); color: #1c1b1f; padding-bottom: 20px; }
-        .mui-nav { display: flex; justify-content: center; padding: 16px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--primary); }
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-        .mui-card { background: #fff; border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e8def8; }
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #e8def8; background: #fafafa; font-size: 1rem; outline: none; margin-bottom: 15px; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; }
-        .mui-btn { background: var(--primary); color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        #stationList { height: 150px; overflow-y: auto; }
-    </style>
-</head>
-<body>
 
-<nav class="mui-nav"><div class="logo" style="font-weight:700; color:var(--primary)">ЦППК | МОНИТОРИНГ</div></nav>
-
-<main class="container">
-    <div class="mui-card">
-        <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;"><span class="material-symbols-rounded" style="color:var(--primary)">report</span> Создать рапорт</h2>
-        
-        <label>🔍 Поиск станции:</label>
-        <input type="text" id="stationSearch" placeholder="Введите название (напр. Авиа...)" oninput="filterStations()">
-
-        <label>🚉 Выберите из списка:</label>
-        <select id="stationList" size="6">
-            <option disabled>Загрузка станций...</option>
-        </select>
-
-        <label>📝 Описание поломки:</label>
-        <textarea id="description" rows="4" placeholder="Что именно не работает?"></textarea>
-
-        <button class="mui-btn" onclick="sendData()">Отправить рапорт</button>
-    </div>
-</main>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    let allStations = [];
-
-    // Загрузка станций (замени путь на свой, если нужно)
-    fetch('stations.json')
-        .then(response => response.json())
-        .then(data => {
-            allStations = data;
-            renderStations(allStations);
-        })
-        .catch(err => {
-            console.error('Ошибка загрузки станций:', err);
-            // Фолбэк, если JSON не загрузился
-            allStations = ["Авиамоторная", "Выхино", "Парк культуры"]; 
-            renderStations(allStations);
-        });
-
-    function renderStations(list) {
-        const select = document.getElementById('stationList');
-        select.innerHTML = '';
-        list.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s;
-            opt.textContent = s;
-            select.appendChild(opt);
-        });
-    }
-
-    function filterStations() {
-        const query = document.getElementById('stationSearch').value.toLowerCase();
-        const filtered = allStations.filter(s => s.toLowerCase().includes(query));
-        renderStations(filtered);
-    }
-
-    function sendData() {
-        const station = document.getElementById('stationList').value;
-        const description = document.getElementById('description').value;
-        if (!station || !description) {
-            alert("Выберите станцию и напишите описание!");
-            return;
+        /* ПЕРЕМЕННЫЕ С ПОДДЕРЖКОЙ ТЕМ ТЕЛЕГРАМА */
+        :root {
+            --primary: #3db449;
+            --bg-color: var(--tg-theme-bg-color, #f5f5f5);
+            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #1c1b1f);
+            --hint-color: var(--tg-theme-hint-color, #79747e);
+            --input-bg: var(--tg-theme-bg-color, #fafafa);
+            --outline: var(--tg-theme-hint-color, #e8def8);
+            --radius: 28px;
         }
-        tg.sendData(JSON.stringify({ station, description }));
-    }
-</script>
-</body>
-</html>
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+
+        body { 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            transition: all 0.3s ease;
+            padding-bottom: 20px;
+        }
+
+        /* Навигация CyberCore */
+        .mui-nav {
+            display: flex; justify-content: center; padding: 16px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 2px solid var(--primary);
+            opacity: 0.95;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+
+        /* Карточка MD3 */
+        .mui-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid var(--outline);
+            animation: fadeIn 0
