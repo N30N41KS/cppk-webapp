@@ -8,23 +8,17 @@
     <style>
         /* --- ФИКС БАГА С МЕРЦАЮЩИМ ФОНОМ --- */
         html {
-            /* Гарантируем, что фон html тоже покрашен */
             background-color: var(--tg-theme-bg-color, #ffffff);
-            height: 100%; /* Растягиваем на всю высоту */
-            overflow: hidden; /* Предотвращаем лишний скролл всей страницы */
+            height: 100%; overflow: hidden;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box; /* Чтобы паддинги не вылезали за 100% */
-            height: 100%; /* Растягиваем body */
-            overflow-y: auto; /* Скролл только внутри body, если контент не влезает */
-            -webkit-font-smoothing: antialiased; /* Более четкие шрифты на iOS */
+            margin: 0; padding: 20px; box-sizing: border-box;
+            height: 100%; overflow-y: auto;
+            -webkit-font-smoothing: antialiased;
         }
-        /* ----------------------------------- */
 
         h2 { text-align: center; margin-bottom: 20px; margin-top: 0; }
         .form-group { position: relative; margin-bottom: 20px; }
@@ -35,14 +29,11 @@
             border: none; border-radius: 12px;
             background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
             color: var(--tg-theme-text-color, #000000); font-size: 16px;
-            outline: none; /* Убираем стандартную обводку */
-            transition: box-shadow 0.2s;
+            outline: none; transition: box-shadow 0.2s;
         }
-        /* Добавляем свою обводку при фокусе, соответствующую теме */
         input:focus, textarea:focus {
             box-shadow: 0 0 0 2px var(--tg-theme-button-color, #3390ec);
         }
-        
         textarea { resize: none; font-family: inherit; }
 
         button {
@@ -60,14 +51,9 @@
             border-radius: 12px;
             max-height: 250px; overflow-y: auto; z-index: 1000;
             display: none;
-            /* Тень для отделения от фона, адаптируется под тему */
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-             /* Для темной темы тень можно сделать светлее или убрать, 
-                но в стандартном CSS WebApp нет переменной для тени.
-                Оставим универсальную. */
         }
         
-        /* Скроллбар для списка (чтобы было красиво на ПК) */
         .custom-dropdown::-webkit-scrollbar { width: 6px; }
         .custom-dropdown::-webkit-scrollbar-thumb { background-color: var(--tg-theme-hint-color); border-radius: 3px; }
 
@@ -84,13 +70,9 @@
             background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
         }
         
-        /* Стили для ОФИЦИАЛЬНЫХ картинок */
-        .dropdown-item img {
-            width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;
-        }
-        /* Чтобы текст не прилипал, если картинка не загрузилась */
-        .dropdown-item span {
-             margin-left: 4px;
+        .icon-container {
+            display: flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; flex-shrink: 0;
         }
     </style>
 </head>
@@ -115,14 +97,8 @@
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-
-        // === ФИКС БАГА С ФОНОМ ЧЕРЕЗ JS ===
-        // Сообщаем Телеграму, какой цвет использовать для "шапки" и фона приложения,
-        // чтобы избежать черных полос при ресайзе.
         tg.setHeaderColor(tg.themeParams.bg_color || '#ffffff');
         tg.setBackgroundColor(tg.themeParams.bg_color || '#ffffff');
-        // ==================================
-
 
         const rawStations = [
             // МЦД 1
@@ -139,26 +115,42 @@
             "Сокольники (Метро)", "Комсомольская (Метро)", "Охотный Ряд (Метро)", "Библиотека имени Ленина (Метро)", "Парк культуры (Метро)", "Ховрино (Метро)", "Войковская (Метро)", "Динамо (Метро)", "Тверская (Метро)", "Театральная (Метро)", "Павелецкая (Метро)", "Щёлковская (Метро)", "Бауманская (Метро)", "Курская (Метро)", "Площадь Революции (Метро)", "Арбатская (Метро)", "Киевская (Метро)", "Проспект Мира (Метро)", "Таганская (Метро)", "Новокузнецкая (Метро)", "Октябрьская (Метро)", "ВДНХ (Метро)", "Китай-город (Метро)", "Третьяковская (Метро)", "Кузьминки (Метро)", "Пролетарская (Метро)", "Пушкинская (Метро)", "Тимирязевская (Метро)", "Менделеевская (Метро)", "Цветной бульвар (Метро)", "Люблино (Метро)", "Чкаловская (Метро)", "Трубная (Метро)"
         ];
 
-        // --- ГЕНЕРАТОР ОФИЦИАЛЬНЫХ ИКОНОК (Локальные файлы) ---
-        // ВАЖНО: Создай папку "img" рядом с index.html и положи туда файлы:
-        // d1.png, d2.png, d3.png, d4.png, mck.png, metro.png
-        function getIconPathForStation(stationName) {
-            if (stationName.includes("(D1)")) return "img/d1.png";
-            if (stationName.includes("(D2)")) return "img/d2.png";
-            if (stationName.includes("(D3)")) return "img/d3.png";
-            if (stationName.includes("(D4)")) return "img/d4.png";
-            if (stationName.includes("(МЦК)")) return "img/mck.png";
-            
-            // Стандартное Метро для всех остальных
-            return "img/metro.png";
+        // --- ГЕНЕРАТОР ОФИЦИАЛЬНОЙ ГРАФИКИ (ТВОЙ КОД) ---
+        // Шаблон на базе твоего SVG со скосом и правильными углами
+        const getMcdSvg = (color, text) => `
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                <g transform="translate(256, 256) skewX(-15.5) translate(-256, -256)">
+                    <rect x="96" y="116" width="320" height="280" rx="85" fill="${color}"/>
+                </g>
+                <text x="254" y="260" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="160" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">${text}</text>
+            </svg>`;
+
+        // Шаблон для МЦК (Двойное кольцо)
+        const getMckSvg = () => `
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                <circle cx="256" cy="256" r="180" stroke="#ED1B35" stroke-width="60" fill="none"/>
+            </svg>`;
+
+        // Шаблон для Метро (Официальная М)
+        const getMetroSvg = () => `
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                <text x="256" y="360" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="360" fill="#ED1B35" text-anchor="middle">M</text>
+            </svg>`;
+
+        function getOfficialSvgCode(stationName) {
+            if (stationName.includes("(D1)")) return getMcdSvg("#F6A600", "D1");
+            if (stationName.includes("(D2)")) return getMcdSvg("#E74280", "D2");
+            if (stationName.includes("(D3)")) return getMcdSvg("#E95B0C", "D3");
+            if (stationName.includes("(D4)")) return getMcdSvg("#40B181", "D4");
+            if (stationName.includes("(МЦК)")) return getMckSvg();
+            return getMetroSvg(); // Для Метро
         }
-        // -----------------------------------------------------
+        // -----------------------------------------------
 
         const stations = rawStations.map(name => {
             return {
                 name: name,
-                // Теперь мы храним ПУТЬ к картинке
-                iconPath: getIconPathForStation(name)
+                iconCode: getOfficialSvgCode(name)
             };
         });
 
@@ -178,8 +170,8 @@
             filtered.sort((a, b) => a.name.localeCompare(b.name)).forEach(station => {
                 let div = document.createElement('div');
                 div.className = 'dropdown-item';
-                // Вставляем тег <img> с путем к локальному файлу
-                div.innerHTML = `<img src="${station.iconPath}" alt="logo" onerror="this.style.display='none'"> <span>${station.name}</span>`;
+                // Вставляем сгенерированный SVG
+                div.innerHTML = `<div class="icon-container">${station.iconCode}</div> <span>${station.name}</span>`;
                 
                 div.addEventListener('click', () => {
                     searchInput.value = station.name;
@@ -193,13 +185,8 @@
         }
 
         searchInput.addEventListener('input', (e) => renderList(e.target.value));
-        
-        // Показываем список при фокусе, если что-то введено или пусто
-        searchInput.addEventListener('focus', () => {
-             renderList(searchInput.value);
-        });
+        searchInput.addEventListener('focus', () => renderList(searchInput.value));
 
-        // Закрываем список при клике вне его
         document.addEventListener('click', (e) => {
             if (e.target !== searchInput && !dropdown.contains(e.target)) {
                 dropdown.classList.remove('active');
@@ -207,9 +194,7 @@
         });
 
         document.getElementById('submit-btn').addEventListener('click', () => {
-            // Анимация нажатия кнопки средствами Телеграм
             tg.HapticFeedback.impactOccurred('light');
-            
             let descInput = document.getElementById('description').value.trim();
             let finalStation = selectedStation || searchInput.value.trim() || "Не указана";
 
@@ -218,7 +203,7 @@
                 return;
             }
 
-            // Очищаем название от тегов (D1), (МЦК), (Метро) перед отправкой
+            // Очищаем название от тегов перед отправкой ИИ
             finalStation = finalStation.replace(/\s*\(.*?\)/, '').trim();
 
             let dataToSend = {
@@ -227,10 +212,7 @@
             };
 
             tg.sendData(JSON.stringify(dataToSend));
-            // Не закрываем мгновенно, чтобы пользователь увидел визуальный отклик кнопки
-            setTimeout(() => {
-                 tg.close();
-            }, 100);
+            setTimeout(() => { tg.close(); }, 100);
         });
     </script>
 </body>
