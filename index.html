@@ -96,3 +96,83 @@
 <main class="container">
     <div class="mui-card">
         <h2><span class="material-symbols-rounded" style="color:var(--primary)">edit_document</span> Новый рапорт</h2>
+        
+        <label>Поиск станции:</label>
+        <input type="text" id="stationSearch" placeholder="Начните вводить название..." oninput="filterStations()">
+
+        <label>Выберите из списка:</label>
+        <select id="stationList" size="8">
+            <option value="Авиамоторная (Линия 8)">🟡 Авиамоторная (Линия 8)</option>
+            <option value="Авиамоторная (БКЛ)">🔘 Авиамоторная (БКЛ)</option>
+            <option value="Выхино (ТКЛ)">🟣 Выхино (ТКЛ)</option>
+            <option value="Нижегородская (БКЛ)">🔘 Нижегородская (БКЛ)</option>
+            <option value="Нижегородская (МЦК)">⚪ Нижегородская (МЦК)</option>
+            <option value="Нижегородская (Некрасовская)">💖 Нижегородская</option>
+            <option value="Парк культуры (Линия 1)">🔴 Парк культуры (Л1)</option>
+            <option value="Парк культуры (Кольцевая)">🟤 Парк культуры (КЛ)</option>
+            <option value="Электрозаводская (Линия 3)">🔵 Электрозаводская (Л3)</option>
+            <option value="Электрозаводская (БКЛ)">🔘 Электрозаводская (БКЛ)</option>
+            <option value="Курская (Кольцевая)">🟤 Курская (КЛ)</option>
+            <option value="Курская (Линия 3)">🔵 Курская (Л3)</option>
+            <option value="Комсомольская (Линия 1)">🔴 Комсомольская (Л1)</option>
+            <option value="Комсомольская (Кольцевая)">🟤 Комсомольская (КЛ)</option>
+            <option value="Выхино (D3)">🚆 Выхино (D3)</option>
+            <option value="Чухлинка (D4)">🚆 Чухлинка (D4)</option>
+            <option value="Нижегородская (D4)">🚆 Нижегородская (D4)</option>
+            <option value="Курская (D2/D4)">🚆 Курская (D2/D4)</option>
+            <option value="Площадь трех вокзалов (D2/D4)">🚆 Пл. трех вокзалов</option>
+        </select>
+
+        <label>Что произошло?</label>
+        <textarea id="description" rows="4" placeholder="Опишите проблему для ИИ..."></textarea>
+
+        <button class="mui-btn" onclick="sendData()">
+            <span class="material-symbols-rounded">send</span>
+            Отправить рапорт
+        </button>
+    </div>
+</main>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    
+    // Автоматическая подстройка под ночную/дневную тему ТГ
+    function applyTheme() {
+        document.documentElement.style.setProperty('--bg-color', tg.backgroundColor || '#f5f5f5');
+        document.documentElement.style.setProperty('--card-bg', tg.secondaryBackgroundColor || '#ffffff');
+        document.documentElement.style.setProperty('--text-color', tg.themeParams.text_color || '#1c1b1f');
+    }
+    
+    tg.onEvent('themeChanged', applyTheme);
+    applyTheme();
+
+    // Твой поиск (теперь работает стабильно)
+    function filterStations() {
+        const query = document.getElementById('stationSearch').value.toLowerCase();
+        const select = document.getElementById('stationList');
+        const options = select.options;
+
+        for (let i = 0; i < options.length; i++) {
+            const text = options[i].text.toLowerCase();
+            options[i].style.display = text.includes(query) ? "" : "none";
+        }
+    }
+
+    function sendData() {
+        const station = document.getElementById('stationList').value;
+        const description = document.getElementById('description').value;
+
+        if (!station || !description) {
+            tg.HapticFeedback.notificationOccurred('error');
+            alert("Пожалуйста, выберите станцию и введите описание.");
+            return;
+        }
+
+        const data = { station, description };
+        tg.HapticFeedback.impactOccurred('medium');
+        tg.sendData(JSON.stringify(data));
+    }
+</script>
+</body>
+</html>
