@@ -6,54 +6,45 @@
     <title>Транспортный Рапорт</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* БАЗОВЫЕ ПЕРЕМЕННЫЕ */
+        /* ИСПОЛЬЗУЕМ ТОЛЬКО РОДНЫЕ ПЕРЕМЕННЫЕ ТЕЛЕГРАМА ДЛЯ 100% СОВМЕСТИМОСТИ */
         :root {
-            --bg-color: #ffffff;
-            --text-color: #111820;
-            --input-bg: #f0f2f5;
-            --hint-color: #6b7280;
-            --primary-color: #005AAB; 
-            --button-text: #ffffff;
-            --border-color: #e5e7eb;
-            --shadow: rgba(0, 0, 0, 0.1);
+            --primary-color: #005AAB; /* Цвет ЦППК (Хамелеон его изменит) */
+            --bg-color: var(--tg-theme-bg-color, #ffffff);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --input-bg: var(--tg-theme-secondary-bg-color, #f0f2f5);
+            --hint-color: var(--tg-theme-hint-color, #8e8e93);
+            --button-text: var(--tg-theme-button-text-color, #ffffff);
         }
 
-        /* ТЕМНАЯ ТЕМА */
-        body.dark-theme {
-            --bg-color: #111822;
-            --text-color: #f3f4f6;
-            --input-bg: #1f2937;
-            --hint-color: #9ca3af;
-            --primary-color: #2b8ee3;
-            --border-color: #374151;
-            --shadow: rgba(0, 0, 0, 0.4);
-        }
+        /* Плавный переход только для цвета кнопок и рамок */
+        * { transition: border-color 0.3s ease, background-color 0.3s ease; }
 
-        /* Плавный переход для Хамелеона */
-        * { transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; }
-
-        html { background-color: var(--bg-color); height: 100%; overflow: hidden; }
-        
-        body { 
+        html, body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; padding: 20px 15px; box-sizing: border-box; height: 100%; overflow-y: auto;
+            margin: 0; padding: 0; box-sizing: border-box; height: 100%; overflow-x: hidden;
         }
+        
+        body { padding: 20px 15px; }
 
-        /* Статичный и строгий заголовок */
-        h2 { text-align: center; margin-bottom: 20px; font-size: 22px; color: var(--text-color); font-weight: 700; }
+        /* Заголовок всегда контрастный */
+        h2 { text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 22px; color: var(--text-color); font-weight: 700; }
         
         .form-group { position: relative; margin-bottom: 18px; }
         label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--hint-color); font-size: 14px; margin-left: 4px; }
 
+        /* Поля ввода теперь 100% слушаются Телеграм */
         input, textarea { 
             width: 100%; box-sizing: border-box; padding: 14px; 
-            border: 2px solid var(--border-color); border-radius: 12px; 
+            border: 2px solid transparent; border-radius: 12px; 
             background-color: var(--input-bg); color: var(--text-color); font-size: 16px; outline: none; 
         }
 
+        input::placeholder, textarea::placeholder { color: var(--hint-color); }
+
         input:focus, textarea:focus { 
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05); 
         }
 
         /* КНОПКА */
@@ -62,13 +53,12 @@
             background-color: var(--primary-color); color: var(--button-text); 
             border: none; border-radius: 12px; font-size: 17px; font-weight: 600; 
             cursor: pointer; margin-top: 10px;
-            box-shadow: 0 4px 15px var(--shadow);
             white-space: nowrap;
         }
 
         button:active:not(.train-depart) { transform: scale(0.98); }
 
-        /* ИСПРАВЛЕННАЯ АНИМАЦИЯ ПОЕЗДА */
+        /* АНИМАЦИЯ ПОЕЗДА */
         .train-depart {
             animation: trainDrive 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             pointer-events: none;
@@ -76,7 +66,7 @@
         }
 
         .train-depart::after {
-            content: "🚄"; /* Скоростной поезд */
+            content: "🚄"; 
             position: absolute; left: 50%; top: 50%;
             transform: translate(-50%, -50%);
             font-size: 28px;
@@ -85,24 +75,24 @@
 
         @keyframes trainDrive {
             0% { transform: translateX(0) scale(1); border-radius: 12px; }
-            20% { transform: translateX(-15px) scale(0.95); border-radius: 25px; } /* Небольшой откат назад перед стартом */
-            100% { transform: translateX(200vw) scale(0.95); border-radius: 25px; } /* Резко улетает за правый край */
+            20% { transform: translateX(-15px) scale(0.95); border-radius: 25px; } 
+            100% { transform: translateX(200vw) scale(0.95); border-radius: 25px; } 
         }
 
         /* Выпадающий список */
         .custom-dropdown { 
             position: absolute; top: calc(100% + 5px); left: 0; right: 0; 
-            background-color: var(--bg-color); border: 1px solid var(--border-color);
+            background-color: var(--bg-color); border: 1px solid var(--input-bg);
             border-radius: 12px; max-height: 220px; overflow-y: auto; z-index: 1000; display: none; 
-            box-shadow: 0 8px 20px var(--shadow); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
         }
         .custom-dropdown.active { display: block; }
-        .dropdown-item { padding: 12px 14px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--border-color); }
+        .dropdown-item { padding: 12px 14px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--input-bg); }
         .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover { background-color: var(--input-bg); }
         .icon-box { width: 24px; height: 24px; margin-right: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .icon-box img { width: 100%; height: 100%; object-fit: contain; }
-        .station-name { font-size: 15px; font-weight: 500; }
+        .station-name { font-size: 15px; font-weight: 500; color: var(--text-color); }
     </style>
 </head>
 <body>
@@ -126,13 +116,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        function applyTheme() {
-            if (tg.colorScheme === 'dark') document.body.classList.add('dark-theme');
-            else document.body.classList.remove('dark-theme');
-        }
-        tg.onEvent('themeChanged', applyTheme);
-        applyTheme();
-
+        // Цвета линий для эффекта Хамелеон
         const lineColors = {
             "1": "#EF161E", "2": "#2DBE2C", "3": "#0078BF", "4": "#00BFFF", "5": "#8D5B2D",
             "6": "#ED9121", "7": "#800080", "8": "#FFD702", "8А": "#FFD702", "9": "#999999",
@@ -194,11 +178,9 @@
                     selected = s.name;
                     dropdown.classList.remove('active');
                     
-                    // ХАМЕЛЕОН: Меняем цвет интерфейса
+                    // ХАМЕЛЕОН
                     const newColor = lineColors[s.lineId] || '#005AAB';
                     document.documentElement.style.setProperty('--primary-color', newColor);
-                    
-                    // Более сильная тактильная отдача при выборе
                     tg.HapticFeedback.impactOccurred('rigid'); 
                 };
                 dropdown.appendChild(div);
@@ -218,12 +200,9 @@
             }
 
             const btn = this;
-            
-            // Запуск мощной вибрации сразу по клику
             tg.HapticFeedback.impactOccurred('heavy');
             btn.classList.add('train-depart');
             
-            // Вибрация колес поезда
             let rumbles = 0;
             const rumbleInterval = setInterval(() => {
                 tg.HapticFeedback.impactOccurred('heavy');
@@ -231,7 +210,6 @@
                 if (rumbles > 3) clearInterval(rumbleInterval);
             }, 200);
 
-            // Закрываем окно через 1 секунду
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
                 tg.sendData(JSON.stringify({ station: selected, description: desc }));
