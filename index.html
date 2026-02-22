@@ -27,7 +27,7 @@
         .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover, .dropdown-item:active { background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); }
         
-        /* ЖЕСТКИЙ КОНТЕЙНЕР ДЛЯ SVG */
+        /* ЖЕСТКИЙ КОНТЕЙНЕР ДЛЯ ИКОНОК */
         .icon-box { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 12px; flex-shrink: 0; }
         .station-name { font-size: 16px; font-weight: 500; }
     </style>
@@ -65,14 +65,14 @@
             "Сокольники (Метро)", "Комсомольская (Метро)", "Охотный Ряд (Метро)", "Библиотека имени Ленина (Метро)", "Парк культуры (Метро)", "Ховрино (Метро)", "Войковская (Метро)", "Динамо (Метро)", "Тверская (Метро)", "Театральная (Метро)", "Павелецкая (Метро)", "Щёлковская (Метро)", "Бауманская (Метро)", "Курская (Метро)", "Площадь Революции (Метро)", "Арбатская (Метро)", "Киевская (Метро)", "Проспект Мира (Метро)", "Таганская (Метро)", "Новокузнецкая (Метро)", "Октябрьская (Метро)", "ВДНХ (Метро)", "Китай-город (Метро)", "Третьяковская (Метро)", "Кузьминки (Метро)", "Пролетарская (Метро)", "Пушкинская (Метро)", "Тимирязевская (Метро)", "Менделеевская (Метро)", "Цветной бульвар (Метро)", "Люблино (Метро)", "Чкаловская (Метро)", "Трубная (Метро)", "Авиамоторная (Метро)", "Алексеевская (Метро)", "Алтуфьево (Метро)"
         ];
 
-        // 1. ИДЕАЛЬНЫЙ МЦД (Скошенный параллелограмм)
-        const getMcdSvg = (color, text) => `<svg viewBox="0 0 512 512" width="100%" height="100%"><g transform="translate(256, 256) skewX(-15.5) translate(-256, -256)"><rect x="96" y="116" width="320" height="280" rx="85" fill="${color}"/></g><text x="256" y="270" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="160" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">${text}</text></svg>`;
+        // 1. МЦД (Идеальный скошенный прямоугольник)
+        const getMcdSvg = (color, text) => `<svg viewBox="0 0 512 512" width="100%" height="100%"><g transform="translate(256, 256) skewX(-15) translate(-256, -256)"><rect x="80" y="116" width="352" height="280" rx="70" fill="${color}"/></g><text x="256" y="270" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="180" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">${text}</text></svg>`;
         
-        // 2. ИДЕАЛЬНЫЙ МЦК (Два ровных красных кольца и цифра 14)
-        const getMckSvg = () => `<svg viewBox="0 0 512 512" width="100%" height="100%"><circle cx="256" cy="256" r="215" stroke="#ED1B35" stroke-width="45" fill="none"/><circle cx="256" cy="256" r="145" stroke="#ED1B35" stroke-width="15" fill="none"/><text x="256" y="275" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="170" fill="#ED1B35" text-anchor="middle" dominant-baseline="central">14</text></svg>`;
+        // 2. МЦК (Жирный красный контур, БЕЛАЯ ЗАЛИВКА ВНУТРИ, красная цифра 14)
+        const getMckSvg = () => `<svg viewBox="0 0 512 512" width="100%" height="100%"><circle cx="256" cy="256" r="210" fill="#FFFFFF" stroke="#ED1B35" stroke-width="45"/><text x="256" y="275" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="200" fill="#ED1B35" text-anchor="middle" dominant-baseline="central">14</text></svg>`;
         
-        // 3. ИДЕАЛЬНОЕ МЕТРО (Красивая, классическая буква М)
-        const getMetroSvg = () => `<svg viewBox="0 0 512 512" width="100%" height="100%"><text x="256" y="280" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="450" fill="#ED1B35" text-anchor="middle" dominant-baseline="central">M</text></svg>`;
+        // 3. МЕТРО (ОФИЦИАЛЬНЫЙ ВЕКТОР с раскосыми ножками, а не текст!)
+        const getMetroSvg = () => `<svg viewBox="0 0 512 512" width="100%" height="100%"><path fill="#ED1B35" d="M375.3 128H480L381.5 400h-90.8l-34.7-93.5-34.7 93.5H130.5L32 128h104.7l59.3 162.1 59.9-162.1h105.4l54.8 162.1L375.3 128z"/></svg>`;
 
         function getOfficialSvgCode(stationName) {
             if (stationName.includes("(D1)")) return getMcdSvg("#F6A600", "D1");
@@ -88,3 +88,59 @@
         });
 
         const searchInput = document.getElementById('station-search');
+        const dropdown = document.getElementById('custom-stations-list');
+        let selectedStation = "";
+
+        function renderList(filterText = "") {
+            dropdown.innerHTML = "";
+            const filtered = stations.filter(s => s.name.toLowerCase().includes(filterText.toLowerCase()));
+            
+            if (filtered.length === 0) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            filtered.sort((a, b) => a.name.localeCompare(b.name)).forEach(station => {
+                let div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.innerHTML = `<div class="icon-box">${station.iconCode}</div> <span class="station-name">${station.name}</span>`;
+                
+                div.addEventListener('click', () => {
+                    searchInput.value = station.name;
+                    selectedStation = station.name;
+                    dropdown.classList.remove('active');
+                });
+                
+                dropdown.appendChild(div);
+            });
+            dropdown.classList.add('active');
+        }
+
+        searchInput.addEventListener('input', (e) => renderList(e.target.value));
+        searchInput.addEventListener('focus', () => renderList(searchInput.value));
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            let descInput = document.getElementById('description').value.trim();
+            let finalStation = selectedStation || searchInput.value.trim() || "Не указана";
+
+            if (!descInput) {
+                tg.showAlert("Пожалуйста, опишите проблему!");
+                return;
+            }
+
+            finalStation = finalStation.replace(/\s*\(.*?\)/, '').trim();
+
+            let dataToSend = { station: finalStation, description: descInput };
+            tg.sendData(JSON.stringify(dataToSend));
+            setTimeout(() => { tg.close(); }, 100);
+        });
+    </script>
+</body>
+</html>
