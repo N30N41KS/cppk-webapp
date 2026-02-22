@@ -3,104 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ЦППК | Мониторинг</title>
+    <title>ЦППК Мониторинг</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        :root {
-            --primary: #3db449;
-            --surface: #f5f5f5;
-            --container: #ffffff;
-            --radius: 28px;
-        }
+        :root { --primary: #3db449; --surface: #f5f5f5; --radius: 28px; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
-        body { background: var(--surface); color: #1c1b1f; }
-        
-        .mui-nav {
-            display: flex; justify-content: center; padding: 16px;
-            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px);
-            position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--primary);
-        }
-        .logo { font-weight: 700; color: var(--primary); font-size: 1.2rem; }
-        
+        body { background: var(--surface); color: #1c1b1f; padding-bottom: 20px; }
+        .mui-nav { display: flex; justify-content: center; padding: 16px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--primary); }
         .container { max-width: 500px; margin: 0 auto; padding: 20px; }
-        
-        .mui-card {
-            background: var(--container); border-radius: var(--radius);
-            padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid #e8def8; animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        input, select, textarea {
-            width: 100%; padding: 14px; border-radius: 16px;
-            border: 1px solid #e8def8; background: #fafafa;
-            font-size: 1rem; outline: none; transition: 0.3s; margin-bottom: 15px;
-        }
+        .mui-card { background: #fff; border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e8def8; }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #e8def8; background: #fafafa; font-size: 1rem; outline: none; margin-bottom: 15px; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; }
-
-        .mui-btn {
-            background: var(--primary); color: white; border: none;
-            padding: 18px; width: 100%; border-radius: 16px;
-            font-weight: 700; cursor: pointer; text-transform: uppercase;
-        }
+        .mui-btn { background: var(--primary); color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        #stationList { height: 150px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-<nav class="mui-nav">
-    <div class="logo">ЦППК | МОНИТОРИНГ</div>
-</nav>
+<nav class="mui-nav"><div class="logo" style="font-weight:700; color:var(--primary)">ЦППК | МОНИТОРИНГ</div></nav>
 
 <main class="container">
     <div class="mui-card">
-        <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;">
-            <span class="material-symbols-rounded" style="color:var(--primary)">report</span> Создать рапорт
-        </h2>
+        <h2 style="margin-bottom:20px; display:flex; align-items:center; gap:10px;"><span class="material-symbols-rounded" style="color:var(--primary)">report</span> Создать рапорт</h2>
         
-        <label>Поиск станции:</label>
-        <input type="text" id="stationSearch" placeholder="Введите название..." onkeyup="filterStations()">
+        <label>🔍 Поиск станции:</label>
+        <input type="text" id="stationSearch" placeholder="Введите название (напр. Авиа...)" oninput="filterStations()">
 
-        <label>Выберите из списка:</label>
-        <select id="station" size="8">
-            </select>
+        <label>🚉 Выберите из списка:</label>
+        <select id="stationList" size="6">
+            <option disabled>Загрузка станций...</option>
+        </select>
 
-        <label>Описание поломки:</label>
+        <label>📝 Описание поломки:</label>
         <textarea id="description" rows="4" placeholder="Что именно не работает?"></textarea>
 
         <button class="mui-btn" onclick="sendData()">Отправить рапорт</button>
     </div>
 </main>
 
-<script src="stations.js"></script>
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // 1. Автоматическая загрузка ВСЕХ станций при старте
-    const select = document.getElementById('station');
-    STATIONS_LIST.forEach(name => {
-        let opt = document.createElement('option');
-        opt.value = name;
-        opt.innerHTML = name;
-        select.appendChild(opt);
-    });
+    let allStations = [];
 
-    // 2. Поиск (твоя логика из Wiki)
+    // Загрузка станций (замени путь на свой, если нужно)
+    fetch('stations.json')
+        .then(response => response.json())
+        .then(data => {
+            allStations = data;
+            renderStations(allStations);
+        })
+        .catch(err => {
+            console.error('Ошибка загрузки станций:', err);
+            // Фолбэк, если JSON не загрузился
+            allStations = ["Авиамоторная", "Выхино", "Парк культуры"]; 
+            renderStations(allStations);
+        });
+
+    function renderStations(list) {
+        const select = document.getElementById('stationList');
+        select.innerHTML = '';
+        list.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            select.appendChild(opt);
+        });
+    }
+
     function filterStations() {
-        const filter = document.getElementById('stationSearch').value.toLowerCase();
-        const options = select.options;
-        for (let i = 0; i < options.length; i++) {
-            options[i].style.display = options[i].text.toLowerCase().includes(filter) ? "" : "none";
-        }
+        const query = document.getElementById('stationSearch').value.toLowerCase();
+        const filtered = allStations.filter(s => s.toLowerCase().includes(query));
+        renderStations(filtered);
     }
 
     function sendData() {
-        const station = select.value;
+        const station = document.getElementById('stationList').value;
         const description = document.getElementById('description').value;
         if (!station || !description) {
-            alert("Заполните все поля!");
+            alert("Выберите станцию и напишите описание!");
             return;
         }
         tg.sendData(JSON.stringify({ station, description }));
