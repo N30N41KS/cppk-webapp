@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+html { scroll-behavior: smooth; }
+
+:root {
+    --primary: #3db449;       /* Тот самый зеленый ЦППК */
+    --on-primary: #ffffff;
+    --surface: #f5f5f5;       /* Светлый нейтральный фон */
+    --container: #ffffff;     /* Белоснежные карточки */
+    --outline: #d1d1d1;
+    --radius: 28px;
+    --text-main: #2c2c2c;     /* Строгий графитовый текст */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+
+body { background: var(--surface); color: var(--text-main); line-height: 1.6; }
+
+/* Навигация как в CyberCore, но с акцентом ЦППК */
+.mui-nav {
+    display: flex; justify-content: center; align-items: center;
+    padding: 16px 5%; background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100;
+    border-bottom: 2px solid var(--primary); /* Фирменная черта */
+}
+
+.logo { font-weight: 700; font-size: 1.4rem; color: var(--primary); }
+
+.container { max-width: 500px; margin: 0 auto; padding: 20px; }
+
+/* Карточка в твоем стиле MD3 */
+.mui-card {
+    background: var(--container);
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.03);
+    margin-top: 10px;
+}
+
+h2 { color: var(--text-main); display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+
+/* Поля ввода */
+select, textarea {
+    width: 100%; padding: 16px; border-radius: 16px;
+    border: 2px solid #eeeeee; background: #fafafa;
+    font-size: 1rem; margin-bottom: 20px; outline: none; transition: 0.3s;
+}
+
+select:focus, textarea:focus { border-color: var(--primary); background: #fff; }
+
+/* Кнопка — мощный зеленый акцент */
+.mui-btn {
+    background: var(--primary); color: white; border: none;
+    padding: 18px; width: 100%; border-radius: 16px;
+    font-weight: 700; font-size: 1rem; cursor: pointer;
+    transition: 0.3s; text-transform: uppercase;
+}
+
+.mui-btn:active { transform: scale(0.98); }
