@@ -6,7 +6,6 @@
     <title>Оформление заявки ЖД</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили адаптируются под темную/светлую тему пользователя в Телеграме */
         body {
             font-family: Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #ffffff);
@@ -14,44 +13,43 @@
             padding: 20px;
             margin: 0;
         }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: var(--tg-theme-hint-color, #999999);
-        }
+        h2 { text-align: center; margin-bottom: 20px; }
+        .form-group { position: relative; margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--tg-theme-hint-color, #999999); }
+        
         input, textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            border: 1px solid var(--tg-theme-hint-color, #cccccc);
-            border-radius: 8px;
+            width: 100%; box-sizing: border-box; padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc); border-radius: 8px;
             background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            color: var(--tg-theme-text-color, #000000);
-            font-size: 16px;
+            color: var(--tg-theme-text-color, #000000); font-size: 16px;
         }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--tg-theme-button-color, #3390ec);
-        }
+        input:focus, textarea:focus { outline: none; border-color: var(--tg-theme-button-color, #3390ec); }
+        
         button {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
+            width: 100%; padding: 15px; background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+
+        /* МАГИЯ НАЧИНАЕТСЯ ЗДЕСЬ: Стили для пиратского списка */
+        .custom-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-top: none; border-radius: 0 0 8px 8px;
+            max-height: 200px; overflow-y: auto; z-index: 1000;
+            display: none; /* Скрыт по умолчанию */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .custom-dropdown.active { display: block; }
+        
+        .dropdown-item {
+            padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+            cursor: pointer; border-bottom: 1px solid #eee;
+        }
+        .dropdown-item:hover { background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); }
+        .dropdown-item img {
+            width: 24px; height: 24px; object-fit: contain;
         }
     </style>
 </head>
@@ -60,69 +58,35 @@
     <h2>🚨 Сообщить о поломке</h2>
 
     <div class="form-group">
-        <label for="station">Станция (Метро, МЦК, МЦД):</label>
-        <input type="text" id="station" list="stations-list" placeholder="Начните вводить название..." autocomplete="off">
-        <datalist id="stations-list"></datalist>
+        <label for="station-search">Станция (Метро, МЦК, МЦД):</label>
+        <input type="text" id="station-search" placeholder="Начните вводить название..." autocomplete="off">
+        
+        <div id="custom-stations-list" class="custom-dropdown"></div>
     </div>
 
     <div class="form-group">
         <label for="description">Что сломалось?</label>
-        <textarea id="description" rows="5" placeholder="Например: Не работает правый турникет на выход, мигает красный крест..."></textarea>
+        <textarea id="description" rows="5" placeholder="Например: Не работает правый турникет..."></textarea>
     </div>
 
     <button id="submit-btn">Отправить рапорт</button>
 
     <script>
-        // Инициализируем Telegram Web App
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Открываем на весь экран
+        tg.expand();
 
-        // Полная база станций (МЦД, МЦК, Метро)
-        const moscowStations = [
-            "Одинцово", "Баковка", "Сколково", "Немчиновка", "Сетунь", "Рабочий Посёлок", "Кунцево", "Славянский бульвар", "Фили", "Тестовская", "Беговая", "Белорусская", "Савёловская", "Дмитровская", "Гражданская", "Красный Балтиец", "Стрешнево", "Щукинская", "Тушинская", "Волоколамская", "Пенягино", "Павшино", "Красногорская", "Опалиха", "Аникеевка", "Нахабино",
-            "Подольск", "Силикатная", "Остафьево", "Щербинка", "Бутово", "Битца", "Красный Строитель", "Покровское", "Царицыно", "Москворечье", "Курьяново", "Перерва", "Депо", "Печатники", "Текстильщики", "Новохохловская", "Калитники", "Москва-Товарная", "Курская", "Площадь трёх вокзалов", "Рижская", "Марьина Роща",
-            "Зеленоград-Крюково", "Сходня", "Подрезково", "Новоподрезково", "Молжаниново", "Химки", "Левобережная", "Ховрино", "Грачёвская", "Моссельмаш", "Лихоборы", "Петровско-Разумовская", "Останкино", "Электрозаводская", "Сортировочная", "Авиамоторная", "Андроновка", "Перово", "Плющево", "Вешняки", "Выхино", "Косино", "Ухтомская", "Люберцы", "Панки", "Томилино", "Красково", "Малаховка", "Удельная", "Быково", "Ильинская", "Отдых", "Кратово", "Есенинская", "Фабричная", "Раменское", "Ипподром",
-            "Апрелевка", "Победа", "Крёкшино", "Санино", "Кокошкино", "Толстопальцево", "Внуково", "Мичуринец", "Переделкино", "Мещерская", "Очаково", "Аминьевская", "Матвеевская", "Минская", "Поклонная", "Кутузовская", "Серп и Молот", "Нижегородская", "Чухлинка", "Кусково", "Новогиреево", "Реутов", "Никольское", "Салтыковская", "Кучино", "Ольгино", "Железнодорожная",
-            "Окружная", "Владыкино", "Ботанический сад", "Ростокино", "Белокаменная", "Бульвар Рокоссовского", "Локомотив", "Измайлово", "Соколиная Гора", "Шоссе Энтузиастов", "Угрешская", "Дубровка", "Автозаводская", "ЗИЛ", "Верхние Котлы", "Крымская", "Площадь Гагарина", "Лужники", "Деловой центр", "Шелепиха", "Хорошёво", "Зорге", "Панфиловская", "Балтийская", "Коптево",
-            "Охотный Ряд", "Библиотека имени Ленина", "Кропоткинская", "Парк культуры", "Фрунзенская", "Спортивная", "Воробьёвы горы", "Университет", "Проспект Вернадского", "Юго-Западная", "Тропарёво", "Румянцево", "Саларьево", "Комсомольская", "Красные Ворота", "Чистые пруды", "Лубянка", "Киевская", "Смоленская", "Арбатская", "Площадь Революции", "Бауманская", "Семёновская", "Партизанская", "Измайловская", "Первомайская", "Щёлковская",
-            "Павелецкая", "Таганская", "Новокузнецкая", "Театральная", "Тверская", "Маяковская", "Динамо", "Аэропорт", "Сокол", "Войковская", "Водный стадион", "Речной вокзал", "Третьяковская", "Китай-город", "Тургеневская", "Сухаревская", "Проспект Мира", "Алексеевская", "ВДНХ", "Свиблово", "Бабушкинская", "Медведково",
-            "Цветной бульвар", "Менделеевская", "Тимирязевская", "Отрадное", "Бибирево", "Алтуфьево", "Чеховская", "Боровицкая", "Полянка", "Серпуховская", "Тульская", "Нагатинская", "Нагорная", "Нахимовский проспект", "Севастопольская", "Чертановская", "Южная", "Пражская", "Улица Академика Янгеля", "Аннино", "Бульвар Дмитрия Донского"
-        ];
-
-        // Загружаем станции в умный список (datalist)
-        function loadStations() {
-            const dataList = document.getElementById('stations-list');
-            dataList.innerHTML = ''; 
-            // Сортируем по алфавиту
-            moscowStations.sort().forEach(station => {
-                let option = document.createElement('option');
-                option.value = station;
-                dataList.appendChild(option);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', loadStations);
-
-        // Обработка нажатия на кнопку "Отправить"
-        document.getElementById('submit-btn').addEventListener('click', () => {
-            let stationInput = document.getElementById('station').value.trim();
-            let descInput = document.getElementById('description').value.trim();
-
-            if (!descInput) {
-                tg.showAlert("Пожалуйста, опишите проблему, чтобы мы могли отправить бригаду!");
-                return;
-            }
-
-            // Упаковываем данные в JSON
-            let dataToSend = {
-                station: stationInput || "Не указана",
-                description: descInput
-            };
-
-            // Отправляем данные боту и закрываем Web App
-            tg.sendData(JSON.stringify(dataToSend));
-            tg.close();
-        });
-    </script>
-</body>
-</html>
+        // БАЗА СТАНЦИЙ С "УКРАДЕННЫМИ" ИКОНКАМИ
+        // name - то, что увидит диспетчер. icon - ссылка на твою картинку.
+        const stations = [
+            // Пример: вместо 'ссылка_на_мцд1.png' вставь URL или путь к скачанной иконке (например 'img/d1.svg')
+            { name: "Одинцово (D1)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Moscow_Central_Diameters_line_1_logo.svg/1024px-Moscow_Central_Diameters_line_1_logo.svg.png" },
+            { name: "Славянский бульвар (D1)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Moscow_Central_Diameters_line_1_logo.svg/1024px-Moscow_Central_Diameters_line_1_logo.svg.png" },
+            
+            { name: "Подольск (D2)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Moscow_Central_Diameters_line_2_logo.svg/1024px-Moscow_Central_Diameters_line_2_logo.svg.png" },
+            { name: "Царицыно (D2)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Moscow_Central_Diameters_line_2_logo.svg/1024px-Moscow_Central_Diameters_line_2_logo.svg.png" },
+            
+            { name: "Зеленоград-Крюково (D3)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Moscow_Central_Diameters_line_3_logo.svg/1024px-Moscow_Central_Diameters_line_3_logo.svg.png" },
+            { name: "Выхино (D3)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Moscow_Central_Diameters_line_3_logo.svg/1024px-Moscow_Central_Diameters_line_3_logo.svg.png" },
+            
+            { name: "Апрелевка (D4)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Moscow_Central_Diameters_line_4_logo.svg/1024px-Moscow_Central_Diameters_line_4_logo.svg.png" },
+            { name: "Железнодорожная (D4)", icon: "
