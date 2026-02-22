@@ -16,35 +16,28 @@
         textarea { resize: none; font-family: inherit; }
         button { width: 100%; padding: 16px; background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
         button:active { opacity: 0.8; }
-
         .custom-dropdown { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .custom-dropdown.active { display: block; animation: fadeIn 0.1s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        
         .dropdown-item { padding: 12px 16px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #eee); }
         .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover, .dropdown-item:active { background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); }
-        
         .icon-box { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 12px; flex-shrink: 0; }
         .station-name { font-size: 16px; font-weight: 500; }
     </style>
 </head>
 <body>
-
     <h2>🚨 Сообщить о поломке</h2>
-
     <div class="form-group">
         <label for="station-search">Станция (Метро, МЦК, МЦД):</label>
         <input type="text" id="station-search" placeholder="Начните вводить название..." autocomplete="off">
         <div style="position: absolute; right: 16px; top: 43px; color: var(--tg-theme-hint-color); pointer-events: none;">▼</div>
         <div id="custom-stations-list" class="custom-dropdown"></div>
     </div>
-
     <div class="form-group">
         <label for="description">Что сломалось?</label>
         <textarea id="description" rows="5" placeholder="Например: Не работает правый турникет..."></textarea>
     </div>
-
     <button id="submit-btn">Отправить рапорт</button>
 
     <script>
@@ -62,10 +55,14 @@
             "Сокольники (Метро)", "Комсомольская (Метро)", "Охотный Ряд (Метро)", "Библиотека имени Ленина (Метро)", "Парк культуры (Метро)", "Ховрино (Метро)", "Войковская (Метро)", "Динамо (Метро)", "Тверская (Метро)", "Театральная (Метро)", "Павелецкая (Метро)", "Щёлковская (Метро)", "Бауманская (Метро)", "Курская (Метро)", "Площадь Революции (Метро)", "Арбатская (Метро)", "Киевская (Метро)", "Проспект Мира (Метро)", "Таганская (Метро)", "Новокузнецкая (Метро)", "Октябрьская (Метро)", "ВДНХ (Метро)", "Китай-город (Метро)", "Третьяковская (Метро)", "Кузьминки (Метро)", "Пролетарская (Метро)", "Пушкинская (Метро)", "Тимирязевская (Метро)", "Менделеевская (Метро)", "Цветной бульвар (Метро)", "Люблино (Метро)", "Чкаловская (Метро)", "Трубная (Метро)", "Авиамоторная (Метро)", "Алексеевская (Метро)", "Алтуфьево (Метро)"
         ];
 
-        // ГЕОМЕТРИЯ
+        // ГЕОМЕТРИЯ (БЕЗ ХАЛТУРЫ)
         const getMcdSvg = (color, text) => `<svg viewBox="0 0 512 512" width="32" height="32"><g transform="translate(256, 256) skewX(-15) translate(-256, -256)"><rect x="80" y="116" width="352" height="280" rx="70" fill="${color}"/></g><text x="256" y="270" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="180" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">${text}</text></svg>`;
-        const getMckSvg = () => `<svg viewBox="0 0 512 512" width="32" height="32"><circle cx="256" cy="256" r="215" fill="#FFFFFF" stroke="#ED1B35" stroke-width="45"/><text x="256" y="275" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="200" fill="#000000" text-anchor="middle" dominant-baseline="central">14</text></svg>`;
-        const getMetroSvg = () => `<svg viewBox="0 0 512 512" width="32" height="32"><path fill="#ED1B35" d="M256 310L120 120h80l56 80 56-80h80L256 310z"/><path fill="#ED1B35" d="M120 120v260H70V120h50zM442 120v260h-50V120h50z"/></svg>`;
+        
+        // МЦК: Белая подложка + Черная 14
+        const getMckSvg = () => `<svg viewBox="0 0 512 512" width="32" height="32"><circle cx="256" cy="256" r="215" fill="#FFFFFF" stroke="#ED1B35" stroke-width="45"/><text x="256" y="275" font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="210" fill="#000000" text-anchor="middle" dominant-baseline="central">14</text></svg>`;
+        
+        // МЕТРО: Идеальный контур
+        const getMetroSvg = () => `<svg viewBox="0 0 512 512" width="32" height="32"><path fill="#ED1B35" d="M110 380V130h90l56 85 56-85h90v250h-65V190l-81 125h-21l-81-125v190H110z"/></svg>`;
 
         function getOfficialSvgCode(stationName) {
             if (stationName.includes("(D1)")) return getMcdSvg("#F6A600", "D1");
@@ -89,11 +86,7 @@
                 let div = document.createElement('div');
                 div.className = 'dropdown-item';
                 div.innerHTML = `<div class="icon-box">${station.iconCode}</div> <span class="station-name">${station.name}</span>`;
-                div.addEventListener('click', () => { 
-                    searchInput.value = station.name; 
-                    selectedStation = station.name; 
-                    dropdown.classList.remove('active'); 
-                });
+                div.addEventListener('click', () => { searchInput.value = station.name; selectedStation = station.name; dropdown.classList.remove('active'); });
                 dropdown.appendChild(div);
             });
             dropdown.classList.add('active');
@@ -101,15 +94,13 @@
 
         searchInput.addEventListener('input', (e) => renderList(e.target.value));
         searchInput.addEventListener('focus', () => renderList(searchInput.value));
-        document.addEventListener('click', (e) => { 
-            if (e.target !== searchInput && !dropdown.contains(e.target)) dropdown.classList.remove('active'); 
-        });
+        document.addEventListener('click', (e) => { if (e.target !== searchInput && !dropdown.contains(e.target)) dropdown.classList.remove('active'); });
 
         document.getElementById('submit-btn').addEventListener('click', () => {
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             let descInput = document.getElementById('description').value.trim();
             let finalStation = selectedStation || searchInput.value.trim() || "Не указана";
-            if (!descInput) { tg.showAlert("Пожалуйста, опишите проблему!"); return; }
+            if (!descInput) { tg.showAlert("Опишите проблему!"); return; }
             finalStation = finalStation.replace(/\s*\(.*?\)/, '').trim();
             tg.sendData(JSON.stringify({ station: finalStation, description: descInput }));
             setTimeout(() => tg.close(), 100);
