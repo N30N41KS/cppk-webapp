@@ -50,7 +50,8 @@
         button:active:not(.train-depart) { transform: scale(0.98); }
 
         .train-depart {
-            animation: btnFade 0.1s forwards, trainDrive 1.2s 0.2s cubic-bezier(0.5, 0, 0.2, 1) forwards !important;
+            /* УВЕЛИЧИЛИ ВРЕМЯ АНИМАЦИИ ДО 2.5 СЕКУНД */
+            animation: btnFade 0.1s forwards, trainDrive 2.5s 0.2s cubic-bezier(0.5, 0, 0.3, 1) forwards !important;
             background-color: transparent !important;
             box-shadow: none !important;
             pointer-events: none;
@@ -95,8 +96,8 @@
 
         @keyframes trainDrive {
             0% { transform: translate(-50%, -50%); }
-            15% { transform: translate(-55%, -50%); } 
-            100% { transform: translate(250vw, -50%); } 
+            10% { transform: translate(-55%, -50%); } /* Чуть сдаем назад */
+            100% { transform: translate(250vw, -50%); } /* Долгий разгон вправо */
         }
 
         .custom-dropdown { 
@@ -227,9 +228,9 @@
             const btn = this;
             btn.classList.add('train-depart');
             
-            // --- ЭФФЕКТ РАЗГОНА ПОЕЗДА 0 до 100 ---
-            // Массив пауз (мс) между стуками колес. Сначала медленно, потом быстрее.
-            const accelerationDelays = [400, 250, 150, 100, 80, 50, 50]; 
+            // --- УДЛИНЕННЫЙ ЭФФЕКТ РАЗГОНА ПОЕЗДА ---
+            // Массив пауз (в миллисекундах). Суммарно длится около 2.5 секунд
+            const accelerationDelays = [500, 400, 300, 250, 200, 150, 150, 100, 100, 80, 80, 50, 50, 50, 50]; 
             let step = 0;
             
             function accelerateTrain() {
@@ -240,14 +241,14 @@
                 }
             }
             
-            // Начинаем разгон
             accelerateTrain();
 
+            // Окно закрывается через 2.8 секунды, чтобы анимация успела завершиться
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
                 tg.sendData(JSON.stringify({ station: selected, description: desc }));
                 tg.close();
-            }, 1400);
+            }, 2800); 
         };
     </script>
 </body>
