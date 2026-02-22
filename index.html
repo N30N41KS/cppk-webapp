@@ -6,9 +6,9 @@
     <title>Транспортный Рапорт</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* ИСПОЛЬЗУЕМ ТОЛЬКО РОДНЫЕ ПЕРЕМЕННЫЕ ТЕЛЕГРАМА ДЛЯ 100% СОВМЕСТИМОСТИ */
+        /* РОДНЫЕ ПЕРЕМЕННЫЕ ТЕЛЕГРАМА */
         :root {
-            --primary-color: #005AAB; /* Цвет ЦППК (Хамелеон его изменит) */
+            --primary-color: #005AAB; /* Цвет ЦППК по умолчанию */
             --bg-color: var(--tg-theme-bg-color, #ffffff);
             --text-color: var(--tg-theme-text-color, #000000);
             --input-bg: var(--tg-theme-secondary-bg-color, #f0f2f5);
@@ -16,7 +16,6 @@
             --button-text: var(--tg-theme-button-text-color, #ffffff);
         }
 
-        /* Плавный переход только для цвета кнопок и рамок */
         * { transition: border-color 0.3s ease, background-color 0.3s ease; }
 
         html, body { 
@@ -28,13 +27,11 @@
         
         body { padding: 20px 15px; }
 
-        /* Заголовок всегда контрастный */
         h2 { text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 22px; color: var(--text-color); font-weight: 700; }
         
         .form-group { position: relative; margin-bottom: 18px; }
         label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--hint-color); font-size: 14px; margin-left: 4px; }
 
-        /* Поля ввода теперь 100% слушаются Телеграм */
         input, textarea { 
             width: 100%; box-sizing: border-box; padding: 14px; 
             border: 2px solid transparent; border-radius: 12px; 
@@ -42,41 +39,95 @@
         }
 
         input::placeholder, textarea::placeholder { color: var(--hint-color); }
-
-        input:focus, textarea:focus { 
-            border-color: var(--primary-color);
-        }
+        input:focus, textarea:focus { border-color: var(--primary-color); }
 
         /* КНОПКА */
         button { 
-            position: relative; width: 100%; padding: 16px; 
+            position: relative; width: 100%; height: 54px; 
             background-color: var(--primary-color); color: var(--button-text); 
             border: none; border-radius: 12px; font-size: 17px; font-weight: 600; 
             cursor: pointer; margin-top: 10px;
-            white-space: nowrap;
+            overflow: visible; /* Чтобы поезд мог выехать за пределы */
         }
 
         button:active:not(.train-depart) { transform: scale(0.98); }
 
-        /* АНИМАЦИЯ ПОЕЗДА */
+        /* АНИМАЦИЯ ОТПРАВКИ */
         .train-depart {
-            animation: trainDrive 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+            animation: btnFade 0.1s forwards, trainDrive 1.2s 0.2s cubic-bezier(0.5, 0, 0.2, 1) forwards !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
             pointer-events: none;
-            color: transparent !important;
+        }
+        
+        @keyframes btnFade {
+            to { background-color: transparent; }
         }
 
-        .train-depart::after {
-            content: "🚄"; 
-            position: absolute; left: 50%; top: 50%;
+        .train-depart .btn-text { display: none; }
+        .train-depart .train-wrapper { display: flex; }
+
+        /* КАСТОМНЫЙ ПОЕЗД (CSS-Рисунок) */
+        .train-wrapper {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 28px;
-            color: #ffffff !important;
+            height: 26px;
+            gap: 4px;
+            align-items: center;
         }
 
+        .train-car {
+            background-color: #4b5563; /* Темно-серый металлик */
+            width: 40px;
+            height: 100%;
+            position: relative;
+            border-radius: 3px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Окна поезда (светятся цветом ветки Хамелеона) */
+        .train-car::after {
+            content: '';
+            position: absolute;
+            top: 6px; left: 4px; right: 4px; height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+            opacity: 0.9;
+        }
+
+        /* Двери вагона */
+        .train-car::before {
+            content: '';
+            position: absolute;
+            top: 5px; bottom: 2px; left: 50%; width: 4px;
+            transform: translateX(-50%);
+            background-color: #1f2937;
+            border-radius: 1px;
+            z-index: 2;
+        }
+
+        /* Головной вагон */
+        .train-car.head { border-radius: 3px 14px 14px 3px; width: 50px; }
+        .train-car.head .headlight {
+            position: absolute; right: 2px; bottom: 4px; width: 6px; height: 6px;
+            background-color: #FFD702; border-radius: 50%;
+            box-shadow: 4px 0 10px #FFD702;
+        }
+
+        /* Хвостовой вагон */
+        .train-car.tail { border-radius: 14px 3px 3px 14px; width: 50px; }
+        .train-car.tail .taillight {
+            position: absolute; left: 2px; bottom: 4px; width: 6px; height: 6px;
+            background-color: #EF161E; border-radius: 50%;
+        }
+
+        /* Движение состава */
         @keyframes trainDrive {
-            0% { transform: translateX(0) scale(1); border-radius: 12px; }
-            20% { transform: translateX(-15px) scale(0.95); border-radius: 25px; } 
-            100% { transform: translateX(200vw) scale(0.95); border-radius: 25px; } 
+            0% { transform: translate(-50%, -50%); }
+            15% { transform: translate(-55%, -50%); } /* Сдаем назад для разгона */
+            100% { transform: translate(250vw, -50%); } /* Улетаем вправо за экран */
         }
 
         /* Выпадающий список */
@@ -110,13 +161,20 @@
         <textarea id="description" rows="4" placeholder="Напр: неисправность турникета..."></textarea>
     </div>
 
-    <button id="submit-btn">Отправить диспетчеру</button>
+    <button id="submit-btn">
+        <span class="btn-text">Отправить диспетчеру</span>
+        <div class="train-wrapper">
+            <div class="train-car tail"><div class="taillight"></div></div>
+            <div class="train-car passenger"></div>
+            <div class="train-car passenger"></div>
+            <div class="train-car head"><div class="headlight"></div></div>
+        </div>
+    </button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Цвета линий для эффекта Хамелеон
         const lineColors = {
             "1": "#EF161E", "2": "#2DBE2C", "3": "#0078BF", "4": "#00BFFF", "5": "#8D5B2D",
             "6": "#ED9121", "7": "#800080", "8": "#FFD702", "8А": "#FFD702", "9": "#999999",
@@ -178,10 +236,9 @@
                     selected = s.name;
                     dropdown.classList.remove('active');
                     
-                    // ХАМЕЛЕОН
                     const newColor = lineColors[s.lineId] || '#005AAB';
                     document.documentElement.style.setProperty('--primary-color', newColor);
-                    tg.HapticFeedback.impactOccurred('rigid'); 
+                    tg.HapticFeedback.impactOccurred('heavy'); 
                 };
                 dropdown.appendChild(div);
             });
@@ -200,21 +257,24 @@
             }
 
             const btn = this;
-            tg.HapticFeedback.impactOccurred('heavy');
+            
+            // Запускаем анимацию
             btn.classList.add('train-depart');
             
+            // "Стук колес" (серия мощных вибраций)
             let rumbles = 0;
             const rumbleInterval = setInterval(() => {
                 tg.HapticFeedback.impactOccurred('heavy');
                 rumbles++;
-                if (rumbles > 3) clearInterval(rumbleInterval);
-            }, 200);
+                if (rumbles > 4) clearInterval(rumbleInterval);
+            }, 180);
 
+            // Закрываем окно, когда поезд уехал
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
                 tg.sendData(JSON.stringify({ station: selected, description: desc }));
                 tg.close();
-            }, 1000);
+            }, 1400);
         };
     </script>
 </body>
