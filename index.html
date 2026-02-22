@@ -31,21 +31,21 @@
             font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
 
-        /* МАГИЯ НАЧИНАЕТСЯ ЗДЕСЬ: Стили для пиратского списка */
+        /* Стили для пиратского выпадающего списка с картинками */
         .custom-dropdown {
             position: absolute; top: 100%; left: 0; right: 0;
             background-color: var(--tg-theme-bg-color, #ffffff);
             border: 1px solid var(--tg-theme-hint-color, #cccccc);
             border-top: none; border-radius: 0 0 8px 8px;
-            max-height: 200px; overflow-y: auto; z-index: 1000;
-            display: none; /* Скрыт по умолчанию */
+            max-height: 250px; overflow-y: auto; z-index: 1000;
+            display: none; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .custom-dropdown.active { display: block; }
         
         .dropdown-item {
             padding: 10px 12px; display: flex; align-items: center; gap: 10px;
-            cursor: pointer; border-bottom: 1px solid #eee;
+            cursor: pointer; border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #eee);
         }
         .dropdown-item:hover { background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); }
         .dropdown-item img {
@@ -60,13 +60,12 @@
     <div class="form-group">
         <label for="station-search">Станция (Метро, МЦК, МЦД):</label>
         <input type="text" id="station-search" placeholder="Начните вводить название..." autocomplete="off">
-        
         <div id="custom-stations-list" class="custom-dropdown"></div>
     </div>
 
     <div class="form-group">
         <label for="description">Что сломалось?</label>
-        <textarea id="description" rows="5" placeholder="Например: Не работает правый турникет..."></textarea>
+        <textarea id="description" rows="5" placeholder="Например: Не работает правый турникет на выход, мигает красный крест..."></textarea>
     </div>
 
     <button id="submit-btn">Отправить рапорт</button>
@@ -75,18 +74,103 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // БАЗА СТАНЦИЙ С "УКРАДЕННЫМИ" ИКОНКАМИ
-        // name - то, что увидит диспетчер. icon - ссылка на твою картинку.
-        const stations = [
-            // Пример: вместо 'ссылка_на_мцд1.png' вставь URL или путь к скачанной иконке (например 'img/d1.svg')
-            { name: "Одинцово (D1)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Moscow_Central_Diameters_line_1_logo.svg/1024px-Moscow_Central_Diameters_line_1_logo.svg.png" },
-            { name: "Славянский бульвар (D1)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Moscow_Central_Diameters_line_1_logo.svg/1024px-Moscow_Central_Diameters_line_1_logo.svg.png" },
+        // 1. ОГРОМНАЯ БАЗА СТАНЦИЙ С ТЕГАМИ (для авто-иконок)
+        const rawStations = [
+            // МЦД 1
+            "Одинцово (D1)", "Баковка (D1)", "Сколково (D1)", "Немчиновка (D1)", "Сетунь (D1)", "Рабочий Посёлок (D1)", "Кунцево (D1)", "Славянский бульвар (D1)", "Фили (D1)", "Тестовская (D1)", "Беговая (D1)", "Белорусская (D1)", "Савёловская (D1)", "Дмитровская (D1)",
+            // МЦД 2
+            "Подольск (D2)", "Силикатная (D2)", "Остафьево (D2)", "Щербинка (D2)", "Бутово (D2)", "Битца (D2)", "Красный Строитель (D2)", "Покровское (D2)", "Царицыно (D2)", "Москворечье (D2)", "Курьяново (D2)", "Перерва (D2)", "Депо (D2)", "Печатники (D2)", "Текстильщики (D2)",
+            // МЦД 3
+            "Зеленоград-Крюково (D3)", "Сходня (D3)", "Подрезково (D3)", "Новоподрезково (D3)", "Химки (D3)", "Ховрино (D3)", "Грачёвская (D3)", "Лихоборы (D3)", "Петровско-Разумовская (D3)", "Останкино (D3)", "Электрозаводская (D3)", "Выхино (D3)", "Люберцы (D3)", "Раменское (D3)",
+            // МЦД 4
+            "Апрелевка (D4)", "Внуково (D4)", "Переделкино (D4)", "Очаково (D4)", "Аминьевская (D4)", "Минская (D4)", "Кутузовская (D4)", "Нижегородская (D4)", "Чухлинка (D4)", "Новогиреево (D4)", "Реутов (D4)", "Железнодорожная (D4)",
+            // МЦК
+            "Окружная (МЦК)", "Владыкино (МЦК)", "Ботанический сад (МЦК)", "Ростокино (МЦК)", "Локомотив (МЦК)", "Измайлово (МЦК)", "Шоссе Энтузиастов (МЦК)", "Нижегородская (МЦК)", "Автозаводская (МЦК)", "Площадь Гагарина (МЦК)", "Лужники (МЦК)", "Кутузовская (МЦК)", "Деловой центр (МЦК)", "Шелепиха (МЦК)", "Хорошёво (МЦК)", "Балтийская (МЦК)",
+            // Метро (основные)
+            "Сокольники (Метро)", "Комсомольская (Метро)", "Охотный Ряд (Метро)", "Библиотека имени Ленина (Метро)", "Парк культуры (Метро)", "Ховрино (Метро)", "Войковская (Метро)", "Динамо (Метро)", "Тверская (Метро)", "Театральная (Метро)", "Павелецкая (Метро)", "Щёлковская (Метро)", "Бауманская (Метро)", "Курская (Метро)", "Площадь Революции (Метро)", "Арбатская (Метро)", "Киевская (Метро)", "Проспект Мира (Метро)", "Таганская (Метро)", "Новокузнецкая (Метро)", "Октябрьская (Метро)", "ВДНХ (Метро)", "Китай-город (Метро)", "Третьяковская (Метро)", "Кузьминки (Метро)", "Пролетарская (Метро)", "Пушкинская (Метро)", "Тимирязевская (Метро)", "Менделеевская (Метро)", "Цветной бульвар (Метро)", "Люблино (Метро)", "Чкаловская (Метро)", "Трубная (Метро)"
+        ];
+
+        // 2. СЛОВАРЬ ИКОНОК (Раздает картинки по тегам)
+        function getIconForStation(stationName) {
+            if (stationName.includes("(D1)")) return "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Moscow_Central_Diameters_line_1_logo.svg/1024px-Moscow_Central_Diameters_line_1_logo.svg.png";
+            if (stationName.includes("(D2)")) return "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Moscow_Central_Diameters_line_2_logo.svg/1024px-Moscow_Central_Diameters_line_2_logo.svg.png";
+            if (stationName.includes("(D3)")) return "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Moscow_Central_Diameters_line_3_logo.svg/1024px-Moscow_Central_Diameters_line_3_logo.svg.png";
+            if (stationName.includes("(D4)")) return "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Moscow_Central_Diameters_line_4_logo.svg/1024px-Moscow_Central_Diameters_line_4_logo.svg.png";
+            if (stationName.includes("(МЦК)")) return "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Moscow_Central_Circle_logo.svg/1024px-Moscow_Central_Circle_logo.svg.png";
             
-            { name: "Подольск (D2)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Moscow_Central_Diameters_line_2_logo.svg/1024px-Moscow_Central_Diameters_line_2_logo.svg.png" },
-            { name: "Царицыно (D2)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Moscow_Central_Diameters_line_2_logo.svg/1024px-Moscow_Central_Diameters_line_2_logo.svg.png" },
+            // Стандартный красный логотип Метро для всех остальных
+            return "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Moscow_Metro_logo.svg/1024px-Moscow_Metro_logo.svg.png";
+        }
+
+        // 3. СОЗДАЕМ МАССИВ ОБЪЕКТОВ С КАРТИНКАМИ
+        const stations = rawStations.map(name => {
+            return {
+                name: name,
+                icon: getIconForStation(name)
+            };
+        });
+
+        const searchInput = document.getElementById('station-search');
+        const dropdown = document.getElementById('custom-stations-list');
+        let selectedStation = "";
+
+        // 4. ЛОГИКА ОТРИСОВКИ СПИСКА
+        function renderList(filterText = "") {
+            dropdown.innerHTML = "";
+            const filtered = stations.filter(s => s.name.toLowerCase().includes(filterText.toLowerCase()));
             
-            { name: "Зеленоград-Крюково (D3)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Moscow_Central_Diameters_line_3_logo.svg/1024px-Moscow_Central_Diameters_line_3_logo.svg.png" },
-            { name: "Выхино (D3)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Moscow_Central_Diameters_line_3_logo.svg/1024px-Moscow_Central_Diameters_line_3_logo.svg.png" },
-            
-            { name: "Апрелевка (D4)", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Moscow_Central_Diameters_line_4_logo.svg/1024px-Moscow_Central_Diameters_line_4_logo.svg.png" },
-            { name: "Железнодорожная (D4)", icon: "
+            if (filtered.length === 0) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            // Сортировка по алфавиту
+            filtered.sort((a, b) => a.name.localeCompare(b.name)).forEach(station => {
+                let div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.innerHTML = `<img src="${station.icon}" alt="icon"> <span>${station.name}</span>`;
+                
+                div.addEventListener('click', () => {
+                    searchInput.value = station.name;
+                    selectedStation = station.name;
+                    dropdown.classList.remove('active');
+                });
+                
+                dropdown.appendChild(div);
+            });
+            dropdown.classList.add('active');
+        }
+
+        searchInput.addEventListener('input', (e) => renderList(e.target.value));
+        searchInput.addEventListener('focus', () => renderList(searchInput.value));
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && e.target.parentNode !== dropdown) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // 5. ОТПРАВКА ДАННЫХ В БОТА
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            let descInput = document.getElementById('description').value.trim();
+            let finalStation = selectedStation || searchInput.value.trim() || "Не указана";
+
+            if (!descInput) {
+                tg.showAlert("Опишите проблему, пожалуйста!");
+                return;
+            }
+
+            // Очищаем название от тегов (D1), (МЦК), (Метро) перед отправкой, чтобы ИИ получал чистый текст
+            finalStation = finalStation.replace(/\s*\(.*?\)/, '').trim();
+
+            let dataToSend = {
+                station: finalStation,
+                description: descInput
+            };
+
+            tg.sendData(JSON.stringify(dataToSend));
+            tg.close();
+        });
+    </script>
+</body>
+</html>
