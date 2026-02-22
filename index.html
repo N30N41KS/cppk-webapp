@@ -6,74 +6,33 @@
     <title>Оформление заявки ЖД</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* --- ФИКС БАГА С МЕРЦАЮЩИМ ФОНОМ --- */
-        html {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            height: 100%; overflow: hidden;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            margin: 0; padding: 20px; box-sizing: border-box;
-            height: 100%; overflow-y: auto;
-            -webkit-font-smoothing: antialiased;
-        }
-
+        /* Базовые стили и фикс черного фона */
+        html { background-color: var(--tg-theme-bg-color, #ffffff); height: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); margin: 0; padding: 20px; box-sizing: border-box; height: 100%; overflow-y: auto; -webkit-font-smoothing: antialiased; }
         h2 { text-align: center; margin-bottom: 20px; margin-top: 0; }
         .form-group { position: relative; margin-bottom: 20px; }
         label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--tg-theme-hint-color, #999999); font-size: 14px; }
-        
-        input, textarea {
-            width: 100%; box-sizing: border-box; padding: 14px;
-            border: none; border-radius: 12px;
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            color: var(--tg-theme-text-color, #000000); font-size: 16px;
-            outline: none; transition: box-shadow 0.2s;
-        }
-        input:focus, textarea:focus {
-            box-shadow: 0 0 0 2px var(--tg-theme-button-color, #3390ec);
-        }
+        input, textarea { width: 100%; box-sizing: border-box; padding: 14px; border: none; border-radius: 12px; background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); color: var(--tg-theme-text-color, #000000); font-size: 16px; outline: none; transition: box-shadow 0.2s; }
+        input:focus, textarea:focus { box-shadow: 0 0 0 2px var(--tg-theme-button-color, #3390ec); }
         textarea { resize: none; font-family: inherit; }
-
-        button {
-            width: 100%; padding: 16px; background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 12px;
-            font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 10px;
-            transition: opacity 0.2s;
-        }
+        button { width: 100%; padding: 16px; background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
         button:active { opacity: 0.8; }
 
-        /* Стили выпадающего списка */
-        .custom-dropdown {
-            position: absolute; top: calc(100% + 5px); left: 0; right: 0;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            border-radius: 12px;
-            max-height: 250px; overflow-y: auto; z-index: 1000;
-            display: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-        
+        /* Выпадающий список */
+        .custom-dropdown { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .custom-dropdown::-webkit-scrollbar { width: 6px; }
         .custom-dropdown::-webkit-scrollbar-thumb { background-color: var(--tg-theme-hint-color); border-radius: 3px; }
-
-        .custom-dropdown.active { display: block; animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-dropdown.active { display: block; animation: fadeIn 0.15s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .dropdown-item {
-            padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-            cursor: pointer; border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #eee);
-            font-size: 16px;
-        }
+        /* Элементы списка */
+        .dropdown-item { padding: 12px 16px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #eee); }
         .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover, .dropdown-item:active {
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-        }
+        .dropdown-item:hover, .dropdown-item:active { background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); }
         
-        .icon-container {
-            display: flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px; flex-shrink: 0;
-        }
+        /* ЖЕСТКИЙ КОНТЕЙНЕР ДЛЯ SVG (чтобы не пропадали) */
+        .icon-box { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 12px; flex-shrink: 0; }
+        .station-name { font-size: 16px; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -83,7 +42,7 @@
     <div class="form-group">
         <label for="station-search">Станция (Метро, МЦК, МЦД):</label>
         <input type="text" id="station-search" placeholder="Начните вводить название..." autocomplete="off">
-        <div style="position: absolute; right: 14px; top: 42px; color: var(--tg-theme-hint-color); pointer-events: none;">▼</div>
+        <div style="position: absolute; right: 16px; top: 43px; color: var(--tg-theme-hint-color); pointer-events: none;">▼</div>
         <div id="custom-stations-list" class="custom-dropdown"></div>
     </div>
 
@@ -100,42 +59,20 @@
         tg.setHeaderColor(tg.themeParams.bg_color || '#ffffff');
         tg.setBackgroundColor(tg.themeParams.bg_color || '#ffffff');
 
+        // ДОБАВЛЕНЫ АВИАМОТОРНАЯ И ДР. СТАНЦИИ
         const rawStations = [
-            // МЦД 1
             "Одинцово (D1)", "Баковка (D1)", "Сколково (D1)", "Немчиновка (D1)", "Сетунь (D1)", "Рабочий Посёлок (D1)", "Кунцево (D1)", "Славянский бульвар (D1)", "Фили (D1)", "Тестовская (D1)", "Беговая (D1)", "Белорусская (D1)", "Савёловская (D1)", "Дмитровская (D1)",
-            // МЦД 2
             "Подольск (D2)", "Силикатная (D2)", "Остафьево (D2)", "Щербинка (D2)", "Бутово (D2)", "Битца (D2)", "Красный Строитель (D2)", "Покровское (D2)", "Царицыно (D2)", "Москворечье (D2)", "Курьяново (D2)", "Перерва (D2)", "Депо (D2)", "Печатники (D2)", "Текстильщики (D2)",
-            // МЦД 3
             "Зеленоград-Крюково (D3)", "Сходня (D3)", "Подрезково (D3)", "Новоподрезково (D3)", "Химки (D3)", "Ховрино (D3)", "Грачёвская (D3)", "Лихоборы (D3)", "Петровско-Разумовская (D3)", "Останкино (D3)", "Электрозаводская (D3)", "Выхино (D3)", "Люберцы (D3)", "Раменское (D3)",
-            // МЦД 4
             "Апрелевка (D4)", "Внуково (D4)", "Переделкино (D4)", "Очаково (D4)", "Аминьевская (D4)", "Минская (D4)", "Кутузовская (D4)", "Нижегородская (D4)", "Чухлинка (D4)", "Новогиреево (D4)", "Реутов (D4)", "Железнодорожная (D4)",
-            // МЦК
             "Окружная (МЦК)", "Владыкино (МЦК)", "Ботанический сад (МЦК)", "Ростокино (МЦК)", "Локомотив (МЦК)", "Измайлово (МЦК)", "Шоссе Энтузиастов (МЦК)", "Нижегородская (МЦК)", "Автозаводская (МЦК)", "Площадь Гагарина (МЦК)", "Лужники (МЦК)", "Кутузовская (МЦК)", "Деловой центр (МЦК)", "Шелепиха (МЦК)", "Хорошёво (МЦК)", "Балтийская (МЦК)",
-            // Метро (основные)
-            "Сокольники (Метро)", "Комсомольская (Метро)", "Охотный Ряд (Метро)", "Библиотека имени Ленина (Метро)", "Парк культуры (Метро)", "Ховрино (Метро)", "Войковская (Метро)", "Динамо (Метро)", "Тверская (Метро)", "Театральная (Метро)", "Павелецкая (Метро)", "Щёлковская (Метро)", "Бауманская (Метро)", "Курская (Метро)", "Площадь Революции (Метро)", "Арбатская (Метро)", "Киевская (Метро)", "Проспект Мира (Метро)", "Таганская (Метро)", "Новокузнецкая (Метро)", "Октябрьская (Метро)", "ВДНХ (Метро)", "Китай-город (Метро)", "Третьяковская (Метро)", "Кузьминки (Метро)", "Пролетарская (Метро)", "Пушкинская (Метро)", "Тимирязевская (Метро)", "Менделеевская (Метро)", "Цветной бульвар (Метро)", "Люблино (Метро)", "Чкаловская (Метро)", "Трубная (Метро)"
+            "Сокольники (Метро)", "Комсомольская (Метро)", "Охотный Ряд (Метро)", "Библиотека имени Ленина (Метро)", "Парк культуры (Метро)", "Ховрино (Метро)", "Войковская (Метро)", "Динамо (Метро)", "Тверская (Метро)", "Театральная (Метро)", "Павелецкая (Метро)", "Щёлковская (Метро)", "Бауманская (Метро)", "Курская (Метро)", "Площадь Революции (Метро)", "Арбатская (Метро)", "Киевская (Метро)", "Проспект Мира (Метро)", "Таганская (Метро)", "Новокузнецкая (Метро)", "Октябрьская (Метро)", "ВДНХ (Метро)", "Китай-город (Метро)", "Третьяковская (Метро)", "Кузьминки (Метро)", "Пролетарская (Метро)", "Пушкинская (Метро)", "Тимирязевская (Метро)", "Менделеевская (Метро)", "Цветной бульвар (Метро)", "Люблино (Метро)", "Чкаловская (Метро)", "Трубная (Метро)", "Авиамоторная (Метро)", "Алексеевская (Метро)", "Алтуфьево (Метро)"
         ];
 
-        // --- ГЕНЕРАТОР ОФИЦИАЛЬНОЙ ГРАФИКИ (ТВОЙ КОД) ---
-        // Шаблон на базе твоего SVG со скосом и правильными углами
-        const getMcdSvg = (color, text) => `
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                <g transform="translate(256, 256) skewX(-15.5) translate(-256, -256)">
-                    <rect x="96" y="116" width="320" height="280" rx="85" fill="${color}"/>
-                </g>
-                <text x="254" y="260" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="160" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">${text}</text>
-            </svg>`;
-
-        // Шаблон для МЦК (Двойное кольцо)
-        const getMckSvg = () => `
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                <circle cx="256" cy="256" r="180" stroke="#ED1B35" stroke-width="60" fill="none"/>
-            </svg>`;
-
-        // Шаблон для Метро (Официальная М)
-        const getMetroSvg = () => `
-            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                <text x="256" y="360" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="360" fill="#ED1B35" text-anchor="middle">M</text>
-            </svg>`;
+        // ТВОЯ МАТЕМАТИКА SVG (работает безотказно!)
+        const getMcdSvg = (color, text) => `<svg viewBox="0 0 512 512" width="100%" height="100%"><g transform="translate(256, 256) skewX(-15.5) translate(-256, -256)"><rect x="96" y="116" width="320" height="280" rx="85" fill="${color}"/></g><text x="256" y="256" font-family="Arial, sans-serif" font-weight="900" font-size="160" fill="#FFFFFF" text-anchor="middle" dy=".35em">${text}</text></svg>`;
+        const getMckSvg = () => `<svg viewBox="0 0 512 512" width="100%" height="100%"><circle cx="256" cy="256" r="160" stroke="#ED1B35" stroke-width="60" fill="none"/></svg>`;
+        const getMetroSvg = () => `<svg viewBox="0 0 512 512" width="100%" height="100%"><text x="256" y="256" font-family="Arial, sans-serif" font-weight="900" font-size="380" fill="#ED1B35" text-anchor="middle" dy=".35em">M</text></svg>`;
 
         function getOfficialSvgCode(stationName) {
             if (stationName.includes("(D1)")) return getMcdSvg("#F6A600", "D1");
@@ -143,15 +80,11 @@
             if (stationName.includes("(D3)")) return getMcdSvg("#E95B0C", "D3");
             if (stationName.includes("(D4)")) return getMcdSvg("#40B181", "D4");
             if (stationName.includes("(МЦК)")) return getMckSvg();
-            return getMetroSvg(); // Для Метро
+            return getMetroSvg(); 
         }
-        // -----------------------------------------------
 
         const stations = rawStations.map(name => {
-            return {
-                name: name,
-                iconCode: getOfficialSvgCode(name)
-            };
+            return { name: name, iconCode: getOfficialSvgCode(name) };
         });
 
         const searchInput = document.getElementById('station-search');
@@ -170,8 +103,8 @@
             filtered.sort((a, b) => a.name.localeCompare(b.name)).forEach(station => {
                 let div = document.createElement('div');
                 div.className = 'dropdown-item';
-                // Вставляем сгенерированный SVG
-                div.innerHTML = `<div class="icon-container">${station.iconCode}</div> <span>${station.name}</span>`;
+                // ТУТ ВОТ МАГИЯ - SVG сидит в железной коробке .icon-box
+                div.innerHTML = `<div class="icon-box">${station.iconCode}</div> <span class="station-name">${station.name}</span>`;
                 
                 div.addEventListener('click', () => {
                     searchInput.value = station.name;
@@ -194,7 +127,7 @@
         });
 
         document.getElementById('submit-btn').addEventListener('click', () => {
-            tg.HapticFeedback.impactOccurred('light');
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             let descInput = document.getElementById('description').value.trim();
             let finalStation = selectedStation || searchInput.value.trim() || "Не указана";
 
@@ -203,14 +136,9 @@
                 return;
             }
 
-            // Очищаем название от тегов перед отправкой ИИ
             finalStation = finalStation.replace(/\s*\(.*?\)/, '').trim();
 
-            let dataToSend = {
-                station: finalStation,
-                description: descInput
-            };
-
+            let dataToSend = { station: finalStation, description: descInput };
             tg.sendData(JSON.stringify(dataToSend));
             setTimeout(() => { tg.close(); }, 100);
         });
