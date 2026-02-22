@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="200"
+   height="201.69043"
+   id="svg147969"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="Moskwa Metro Line 11.svg">
+  <defs
+     id="defs147971" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2"
+     inkscape:cx="117.46473"
+     inkscape:cy="85.708012"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="px"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-nodes="true"
+     inkscape:bbox-paths="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1600"
+     inkscape:window-height="837"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1">
+    <sodipodi:guide
+       orientation="1,0"
+       position="-9.4899996e-007,-8.4852827"
+       id="guide148130" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="270.11479,-1.6390551e-006"
+       id="guide148132" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="200,-1.6390551e-006"
+       id="guide148134" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata147974">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     transform="translate(-1.0234384,3.3277525)">
+    <g
+       id="g584"
+       transform="matrix(19.84127,0,0,-19.84127,103.50169,190.12463)">
+      <path
+         inkscape:connector-curvature="0"
+         d="M 0,0 C 2.723,0 4.88,2.178 4.88,4.871 4.88,7.573 2.723,9.75 0,9.75 -2.693,9.75 -4.86,7.572 -4.86,4.871 -4.86,2.178 -2.693,0 0,0 m -1.855,2.41 0,4.154 -0.898,0 0.303,0.827 1.543,0 0,-4.981 -0.948,0 z m 2.945,0 0,4.154 -0.868,0 0.252,0.827 1.573,0 0,-4.981 -0.957,0 z"
+         style="fill:#82C0C0;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path586" />
+    </g>
+    <g
+       id="g602"
+       transform="matrix(19.84127,0,0,-19.84127,201.02344,98.461889)">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 0,0 c 0,2.794 -2.25,5.045 -5.04,5.045 -2.791,0 -5.04,-2.251 -5.04,-5.045 0,-2.794 2.249,-5.035 5.04,-5.035 C -2.25,-5.035 0,-2.794 0,0"
+         style="fill:#82C0C0;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path604" />
+    </g>
+    <g
+       id="g606"
+       transform="matrix(19.84127,0,0,-19.84127,183.87869,138.36462)">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 0,0 -1.562,4.051 -0.671,0 L -3.797,0 l 0.799,0 0.296,0.84 1.568,0 L -0.833,0 0,0 z m -1.36,1.482 -1.111,0 0.55,1.51 0.012,0 0.549,-1.51 z"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path608" />
+    </g>
+    <g
+       id="g610"
+       transform="matrix(19.84127,0,0,-19.84127,80.205975,138.73764)">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 0,0 0.769,0 0,4.061 -1.279,0 -0.2,-0.67 0.71,0 L 0,0 z"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path612" />
+    </g>
+    <g
+       id="g614"
+       transform="matrix(19.84127,0,0,-19.84127,38.483719,138.73764)">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 0,0 0.761,0 0,4.061 -1.246,0 L -0.736,3.391 0,3.391 0,0 z"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path616" />
+    </g>
+  </g>
+</svg>
