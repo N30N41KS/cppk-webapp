@@ -50,7 +50,6 @@
         button:active:not(.train-depart) { transform: scale(0.98); }
 
         .train-depart {
-            /* УВЕЛИЧЕНО ДО 3.5 СЕКУНД + БОЛЕЕ ПЛАВНАЯ КРИВАЯ УСКОРЕНИЯ */
             animation: btnFade 0.1s forwards, trainDrive 3.5s 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             background-color: transparent !important;
             box-shadow: none !important;
@@ -96,8 +95,8 @@
 
         @keyframes trainDrive {
             0% { transform: translate(-50%, -50%); }
-            10% { transform: translate(-55%, -50%); } /* Медленный откат назад */
-            100% { transform: translate(200vw, -50%); } /* Плавный выезд */
+            10% { transform: translate(-55%, -50%); } 
+            100% { transform: translate(200vw, -50%); } 
         }
 
         .custom-dropdown { 
@@ -228,22 +227,28 @@
             const btn = this;
             btn.classList.add('train-depart');
             
-            // --- РАССЛАБЛЕННЫЙ ЭФФЕКТ РАЗГОНА ПОЕЗДА ---
-            // Стук колес начинается медленно и только к концу переходит в вибрацию
-            const accelerationDelays = [600, 500, 400, 350, 300, 250, 200, 150, 150, 120, 100, 80, 80, 50, 50, 50, 50, 50]; 
+            // 1. УДАР СЦЕПКИ СРАЗУ ПО КЛИКУ
+            tg.HapticFeedback.impactOccurred('heavy');
+            
+            // 2. ИДЕАЛЬНАЯ СИНХРОНИЗАЦИЯ С CSS
+            // В CSS поезд откатывается ровно 350мс (10% от 3.5 сек). Стук начинается после этого.
+            const delays = [400, 350, 300, 250, 200, 150, 120, 100, 80, 60, 50, 50, 50, 50, 50, 50]; 
             let step = 0;
             
-            function accelerateTrain() {
-                if (step < accelerationDelays.length) {
-                    tg.HapticFeedback.impactOccurred('light'); 
-                    setTimeout(accelerateTrain, accelerationDelays[step]);
+            function clackTrain() {
+                if (step < delays.length) {
+                    // Чередуем жесткую и среднюю вибрацию для эффекта двойного стука колес
+                    let impactType = step % 2 === 0 ? 'rigid' : 'medium';
+                    tg.HapticFeedback.impactOccurred(impactType); 
+                    setTimeout(clackTrain, delays[step]);
                     step++;
                 }
             }
             
-            accelerateTrain();
+            // Запускаем стук колес ровно через 350мс (когда поезд поехал вперед)
+            setTimeout(clackTrain, 350);
 
-            // Окно закрывается через 3.8 секунды
+            // Закрываем окно через 3.8 секунды, когда поезд уже улетел
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
                 tg.sendData(JSON.stringify({ station: selected, description: desc }));
