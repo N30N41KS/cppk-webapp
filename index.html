@@ -13,6 +13,7 @@
             --input-bg: var(--tg-theme-secondary-bg-color, #f0f2f5);
             --hint-color: var(--tg-theme-hint-color, #8e8e93);
             --button-text: var(--tg-theme-button-text-color, #ffffff);
+            --shadow: rgba(0,0,0,0.1);
         }
 
         * { transition: border-color 0.3s ease, background-color 0.3s ease; }
@@ -28,6 +29,25 @@
 
         h2 { text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 22px; color: var(--text-color); font-weight: 700; }
         
+        /* --- ПЕРЕКЛЮЧАТЕЛЬ ВКЛАДОК (МЦД / МЕТРО) --- */
+        .tabs {
+            display: flex; position: relative; background: var(--input-bg);
+            border-radius: 12px; margin-bottom: 20px; padding: 4px;
+        }
+        .tab {
+            flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 14px;
+            color: var(--hint-color); cursor: pointer; z-index: 2; transition: color 0.3s;
+        }
+        .tab.active { color: var(--text-color); }
+        .tab-slider {
+            position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+            background: var(--bg-color); border-radius: 8px; z-index: 1;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        /* Сдвигаем ползунок, если активно Метро */
+        .tabs.metro-active .tab-slider { transform: translateX(100%); }
+
         .form-group { position: relative; margin-bottom: 18px; }
         label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--hint-color); font-size: 14px; margin-left: 4px; }
 
@@ -51,9 +71,7 @@
 
         .train-depart {
             animation: btnFade 0.1s forwards, trainDrive 3.5s 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-            background-color: transparent !important;
-            box-shadow: none !important;
-            pointer-events: none;
+            background-color: transparent !important; box-shadow: none !important; pointer-events: none;
         }
         
         @keyframes btnFade { to { background-color: transparent; } }
@@ -103,7 +121,7 @@
             position: absolute; top: calc(100% + 5px); left: 0; right: 0; 
             background-color: var(--bg-color); border: 1px solid var(--input-bg);
             border-radius: 12px; max-height: 220px; overflow-y: auto; z-index: 1000; display: none; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+            box-shadow: 0 8px 20px var(--shadow); 
         }
         .custom-dropdown.active { display: block; }
         .dropdown-item { padding: 12px 14px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--input-bg); }
@@ -116,7 +134,13 @@
 </head>
 <body>
 
-    <h2>🚨 Создание заявки</h2>
+    <h2>🚨 Служба мониторинга</h2>
+
+    <div class="tabs" id="tabs-container">
+        <div class="tab-slider"></div>
+        <div class="tab active" id="tab-mcd" onclick="switchCategory('mcd')">🚆 МЦД (ЦППК)</div>
+        <div class="tab" id="tab-metro" onclick="switchCategory('metro')">🚇 Метро (Дептранс)</div>
+    </div>
 
     <div class="form-group">
         <label>Где произошел инцидент?</label>
@@ -175,20 +199,50 @@
             "D4": ["Апрелевка", "Победа", "Крёкшино", "Санино", "Кокошкино", "Толстопальцево", "Лесной Городок", "Внуково", "Мичуринец", "Переделкино", "Солнечная", "Мещёрская", "Очаково", "Аминьевская", "Матвеевское", "Минская", "Поклонная", "Москва-Сити", "Кутузовская", "Беговая", "Белорусская", "Савёловская", "Марьина Роща", "Рижская", "Площадь Трёх Вокзалов", "Курская", "Серп и Молот", "Нижегородская", "Чухлинка", "Кусково", "Новогиреево", "Реутов", "Никольское", "Салтыковская", "Кучино", "Ольгино", "Железнодорожная"]
         };
 
+        let currentCategory = 'mcd'; // По умолчанию МЦД
         const stations = [];
-        for (const [line, list] of Object.entries(data)) {
-            list.forEach(name => {
-                stations.push({
-                    name: `${name} (${line.startsWith('D') ? '' : 'Линия '}${line})`,
-                    icon: `img/${line}.svg`,
-                    lineId: line
-                });
-            });
+        
+        // ФУНКЦИЯ СБОРКИ МАССИВА СТАНЦИЙ ПО КАТЕГОРИИ
+        function buildStations() {
+            stations.length = 0; // Очищаем массив
+            for (const [line, list] of Object.entries(data)) {
+                const isMCD = line.startsWith('D');
+                if ((currentCategory === 'mcd' && isMCD) || (currentCategory === 'metro' && !isMCD)) {
+                    list.forEach(name => {
+                        stations.push({
+                            name: `${name} (${isMCD ? '' : 'Линия '}${line})`,
+                            icon: `img/${line}.svg`,
+                            lineId: line
+                        });
+                    });
+                }
+            }
         }
+        buildStations(); // Собираем МЦД при загрузке
 
         const searchInput = document.getElementById('station-search');
         const dropdown = document.getElementById('custom-stations-list');
         let selected = "";
+
+        // ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК
+        window.switchCategory = function(cat) {
+            if (currentCategory === cat) return;
+            currentCategory = cat;
+            
+            // Двигаем ползунок
+            document.getElementById('tabs-container').classList.toggle('metro-active', cat === 'metro');
+            document.getElementById('tab-mcd').classList.toggle('active', cat === 'mcd');
+            document.getElementById('tab-metro').classList.toggle('active', cat === 'metro');
+            
+            // Сбрасываем UI (оставляем цвет кнопки по умолчанию, Хамелеон сброшен)
+            searchInput.value = '';
+            selected = '';
+            document.documentElement.style.setProperty('--primary-color', '#005AAB');
+            dropdown.classList.remove('active');
+            
+            buildStations(); // Пересобираем список станций
+            tg.HapticFeedback.impactOccurred('light');
+        };
 
         function render(val) {
             dropdown.innerHTML = "";
@@ -226,18 +280,13 @@
 
             const btn = this;
             btn.classList.add('train-depart');
-            
-            // 1. УДАР СЦЕПКИ СРАЗУ ПО КЛИКУ
             tg.HapticFeedback.impactOccurred('heavy');
             
-            // 2. ИДЕАЛЬНАЯ СИНХРОНИЗАЦИЯ С CSS
-            // В CSS поезд откатывается ровно 350мс (10% от 3.5 сек). Стук начинается после этого.
-            const delays = [400, 350, 300, 250, 200, 150, 120, 100, 80, 60, 50, 40, 30, 20, 10, 0]; 
+            const delays = [400, 350, 300, 250, 200, 150, 120, 100, 80, 60, 50, 50, 50, 50, 50, 50]; 
             let step = 0;
             
             function clackTrain() {
                 if (step < delays.length) {
-                    // Чередуем жесткую и среднюю вибрацию для эффекта двойного стука колес
                     let impactType = step % 2 === 0 ? 'rigid' : 'medium';
                     tg.HapticFeedback.impactOccurred(impactType); 
                     setTimeout(clackTrain, delays[step]);
@@ -245,17 +294,15 @@
                 }
             }
             
-            // Запускаем стук колес ровно через 350мс (когда поезд поехал вперед)
             setTimeout(clackTrain, 350);
 
-            // Закрываем окно через 3.8 секунды, когда поезд уже улетел
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
-                tg.sendData(JSON.stringify({ station: selected, description: desc }));
+                // ОТПРАВЛЯЕМ КАТЕГОРИЮ БОТУ, ЧТОБЫ ОН ЗНАЛ КУДА ПЕРЕСЛАТЬ (mcd или metro)
+                tg.sendData(JSON.stringify({ station: selected, description: desc, category: currentCategory }));
                 tg.close();
             }, 3800); 
         };
     </script>
 </body>
 </html>
-
