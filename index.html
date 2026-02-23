@@ -50,8 +50,8 @@
         button:active:not(.train-depart) { transform: scale(0.98); }
 
         .train-depart {
-            /* УВЕЛИЧИЛИ ВРЕМЯ АНИМАЦИИ ДО 2.5 СЕКУНД */
-            animation: btnFade 0.1s forwards, trainDrive 2.5s 0.2s cubic-bezier(0.5, 0, 0.3, 1) forwards !important;
+            /* УВЕЛИЧЕНО ДО 3.5 СЕКУНД + БОЛЕЕ ПЛАВНАЯ КРИВАЯ УСКОРЕНИЯ */
+            animation: btnFade 0.1s forwards, trainDrive 3.5s 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             background-color: transparent !important;
             box-shadow: none !important;
             pointer-events: none;
@@ -96,8 +96,8 @@
 
         @keyframes trainDrive {
             0% { transform: translate(-50%, -50%); }
-            10% { transform: translate(-55%, -50%); } /* Чуть сдаем назад */
-            100% { transform: translate(250vw, -50%); } /* Долгий разгон вправо */
+            10% { transform: translate(-55%, -50%); } /* Медленный откат назад */
+            100% { transform: translate(200vw, -50%); } /* Плавный выезд */
         }
 
         .custom-dropdown { 
@@ -228,14 +228,14 @@
             const btn = this;
             btn.classList.add('train-depart');
             
-            // --- УДЛИНЕННЫЙ ЭФФЕКТ РАЗГОНА ПОЕЗДА ---
-            // Массив пауз (в миллисекундах). Суммарно длится около 2.5 секунд
-            const accelerationDelays = [500, 400, 300, 250, 200, 150, 150, 100, 100, 80, 80, 50, 50, 50, 50]; 
+            // --- РАССЛАБЛЕННЫЙ ЭФФЕКТ РАЗГОНА ПОЕЗДА ---
+            // Стук колес начинается медленно и только к концу переходит в вибрацию
+            const accelerationDelays = [600, 500, 400, 350, 300, 250, 200, 150, 150, 120, 100, 80, 80, 50, 50, 50, 50, 50]; 
             let step = 0;
             
             function accelerateTrain() {
                 if (step < accelerationDelays.length) {
-                    tg.HapticFeedback.impactOccurred('light'); // Только легкая вибрация
+                    tg.HapticFeedback.impactOccurred('light'); 
                     setTimeout(accelerateTrain, accelerationDelays[step]);
                     step++;
                 }
@@ -243,12 +243,12 @@
             
             accelerateTrain();
 
-            // Окно закрывается через 2.8 секунды, чтобы анимация успела завершиться
+            // Окно закрывается через 3.8 секунды
             setTimeout(() => {
                 tg.HapticFeedback.notificationOccurred('success');
                 tg.sendData(JSON.stringify({ station: selected, description: desc }));
                 tg.close();
-            }, 2800); 
+            }, 3800); 
         };
     </script>
 </body>
