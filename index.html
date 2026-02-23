@@ -216,8 +216,7 @@
 
         searchInput.oninput = (e) => render(e.target.value);
         document.onclick = (e) => { if (e.target !== searchInput) dropdown.classList.remove('active'); };
-
-        document.getElementById('submit-btn').onclick = function() {
+document.getElementById('submit-btn').onclick = function() {
             const desc = document.getElementById('description').value.trim();
             if (!desc || !selected) { 
                 tg.HapticFeedback.notificationOccurred('error');
@@ -228,20 +227,25 @@
             const btn = this;
             btn.classList.add('train-depart');
             
-            // --- РАССЛАБЛЕННЫЙ ЭФФЕКТ РАЗГОНА ПОЕЗДА ---
-            // Стук колес начинается медленно и только к концу переходит в вибрацию
-            const accelerationDelays = [600, 500, 400, 350, 300, 250, 200, 150, 150, 120, 100, 80, 80, 50, 50, 50, 50, 50]; 
+            // --- ГАРАНТИРОВАННАЯ ВИБРАЦИЯ ---
+            // 1. Мощный толчок сразу при нажатии (гарантированно сработает от пальца)
+            tg.HapticFeedback.impactOccurred('heavy');
+            
+            // 2. Массив пауз. Немного уплотнили, чтобы ОС не заблокировала вибрацию
+            const accelerationDelays = [500, 450, 350, 300, 250, 200, 150, 120, 100, 80, 80, 50, 50, 50]; 
             let step = 0;
             
             function accelerateTrain() {
                 if (step < accelerationDelays.length) {
-                    tg.HapticFeedback.impactOccurred('light'); 
+                    // Используем medium, чтобы телефон точно отреагировал
+                    tg.HapticFeedback.impactOccurred('medium'); 
                     setTimeout(accelerateTrain, accelerationDelays[step]);
                     step++;
                 }
             }
             
-            accelerateTrain();
+            // Запускаем стук колес после первого толчка
+            setTimeout(accelerateTrain, 600);
 
             // Окно закрывается через 3.8 секунды
             setTimeout(() => {
@@ -253,3 +257,4 @@
     </script>
 </body>
 </html>
+
