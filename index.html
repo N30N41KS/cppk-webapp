@@ -1,179 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Транспортный Рапорт</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #005AAB;
+      --bg-color: var(--tg-theme-bg-color, #ffffff);
+      --text-color: var(--tg-theme-text-color, #000000);
+      --input-bg: var(--tg-theme-secondary-bg-color, #f0f2f5);
+      --hint-color: var(--tg-theme-hint-color, #e0e0e9);
+      --button-text: var(--tg-theme-button-text-color, #ffffff);
+      --shadow: rgba(0,0,0,0.1);
+    }
+
+    * {
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    html, body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0; padding: 0; box-sizing: border-box; height: 100%; overflow-x: hidden;
+    }
+
+    body { padding: 20px 15px; }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: var(--text-color);
+      font-weight: 700;
+    }
+
+    .tabs {
+      display: flex;
+      position: relative;
+      background: var(--input-bg);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--hint-color);
+      cursor: pointer;
+      z-index: 2;
+      transition: color 0.3s;
+    }
+
+    .tab.active { color: var(--text-color); }
+
+    .tab-slider {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      background: var(--bg-color);
+      border-radius: 8px;
+      z-index: 1;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .tabs.metro-active .tab-slider {
+      transform: translateX(100%);
+    }
+    .form-group {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--hint-color);
+      font-size: 14px;
+      margin-left: 4px;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-size: 16px;
+      outline: none;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--hint-color);
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--primary-color);
+    }
+
+    button {
+      position: relative;
+      width: 100%;
+      height: 54px;
+      background-color: var(--primary-color);
+      color: var(--button-text);
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      overflow: visible;
+    }
+
+    button:active:not(.train-depart) {
+      transform: scale(0.98);
+    }
+
+    .train-depart {
+      animation: btnFade 0.15s forwards,
+                 trainDrive 3.5s 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      pointer-events: none;
+    }
+
+    @keyframes btnFade {
+      to { background-color: transparent; }
+    }
+
+    .train-depart .btn-text {
+      display: none;
+    }
+
+    .train-depart .train-wrapper {
+      display: flex;
+    }
+
+    .train-wrapper {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      height: 26px;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .train-car {
+      background-color: #4b5563;
+      width: 40px;
+      height: 100%;
+      position: relative;
+      border-radius: 3px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .train-car::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 4px;
+      right: 4px;
+      height: 8px;
+      background-color: var(--primary-color);
+      border-radius: 2px;
+      opacity: 0.9;
+    }
+
+    .train-car::before {
+      content: '';
+      position: absolute;
+      top: 5px;
+      bottom: 2px;
+      left: 50%;
+      width: 4px;
+      transform: translateX(-50%);
+      background-color: #1f2937;
+      border-radius: 1px;
+      z-index: 2;
+    }
+
+    .train-car.head {
+      border-radius: 3px 14px 14px 3px;
+      width: 50px;
+    }
+
+    .train-car.head .headlight {
+      position: absolute;
+      right: 2px;
+      bottom: 4px;
+      width: 6px;
+      height: 6px;
+      background-color: #FFD702;
+      border-radius: 50%;
+      box-shadow: 4px 0 10px #FFD702;
+    }
+
+    .train-car.tail {
+      border-radius: 14px 3px 3px 14px;
+      width: 50px;
+    }
+
+    .train-car.tail .taillight {
+      position: absolute;
+      left: 2px;
+      bottom: 4px;
+      width: 6px;
+      height: 6px;
+      background-color: #EF161E;
+      border-radius: 50%;
+    }
+
+    @keyframes trainDrive {
+      0%   { transform: translate(-50%, -50%); }
+      10%  { transform: translate(-55%, -50%); }
+      100% { transform: translate(200vw, -50%); }
+    }
+
+    .custom-dropdown {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      background-color: var(--bg-color);
+      border: 1px solid var(--input-bg);
+      border-radius: 4px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+
+    .custom-dropdown.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      border-bottom: 1px solid var(--input-bg);
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background-color: var(--input-bg);
+    }
+
+    .icon-box {
+      width: 24px;
+      height: 24px;
+      margin-right: 12px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .station-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+  </style>
+</head>
+<body>
+
+<h2>🚨 Создание заявки</h2>
+
+<div class="tabs" id="tabs-container">
+  <div class="tab-slider"></div>
+
+  <div class="tab active" id="tab-mcd" onclick="switchCategory('mcd')">
+    🚆 МЦД (ЦППК)
+  </div>
+
+  <div class="tab" id="tab-metro" onclick="switchCategory('metro')">
+    🚇 Метро (Дептранс)
+  </div>
+</div>
+
+<div class="form-group">
+  <label>Где произошел инцидент?</label>
+  <input type="text" id="station-search" placeholder="🔍 Поиск станции..." autocomplete="off">
+  <div id="custom-stations-list" class="custom-dropdown"></div>
+</div>
+
+<div class="form-group">
+  <label>Детали проблемы</label>
+  <textarea id="description" rows="4" placeholder="Напр: неисправность турникета..."></textarea>
+</div>
+
+<button id="submit-btn">
+  <span class="btn-text">📤 Отправить диспетчеру</span>
+
+  <span class="train-wrapper">
+    <div class="train-car tail">
+      <div class="taillight"></div>
+    </div>
+
+    <div class="train-car passenger"></div>
+    <div class="train-car passenger"></div>
+
+    <div class="train-car head">
+      <div class="headlight"></div>
+    </div>
+  </span>
+</button>
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+  const tg = window.Telegram.WebApp;
+  tg.expand();
 
-// ==========================
-//   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-// ==========================
-let currentCategory = "mcd";
-let selectedStation = "";
-let debounceTimer = null;
-
-const searchInput = document.getElementById('station-search');
-const dropdown = document.getElementById('custom-stations-list');
-const submitBtn = document.getElementById('submit-btn');
-
-// ==========================
-//   ПОСТОЯННЫЕ ДАННЫЕ
-// ==========================
-const lineColors = {
+  const lineColors = {
     "1": "#EF161E", "2": "#2D82BC", "3": "#0078BF", "4": "#00BFFF",
     "5": "#8D552D", "6": "#ED9121", "7": "#800080", "8": "#FFD702",
     "8A": "#FFD702", "9": "#999999", "10": "#22B14C", "11": "#A1B3AD",
     "12": "#9999FF", "14": "#F6F032", "15": "#43404A",
     "D1": "#9E5B0C", "D2": "#E74280", "D3": "#9E5B0C", "D4": "#40826B"
-};
+  };
 
-// ==========================
-//   ПОСТРОЕНИЕ СПИСКА СТАНЦИЙ
-// ==========================
-let stations = [];
+  const data = {
+    "1": ["Бульвар Рокоссовского", "Черкизовская", "Преображенская площадь", "Сокольники", "Красносельская", "Комсомольская", "Красные ворота", "Чистые пруды", "Лубянка", "Охотный ряд", "Библиотека имени Ленина", "Кропоткинская", "Парк культуры", "Фрунзенская", "Спортивная", "Воробьёвы горы", "Университет", "Проспект Вернадского", "Юго-Западная", "Тропарёво", "Румянцево", "Саларьево", "Филатов луг", "Прокшино", "Ольховая", "Коммунарка"],
+    "2": ["Ховрино", "Беломорская", "Речной вокзал", "Водный стадион", "Войковская", "Сокол", "Аэропорт", "Динамо", "Белорусская", "Маяковская", "Тверская", "Театральная", "Новокузнецкая", "Павелецкая", "Автозаводская", "Технопарк", "Коломенская", "Каширская", "Кантемировская", "Царицыно", "Орехово", "Домодедовская", "Красногвардейская", "Алма-Атинская"],
+    "3": ["Пятницкое шоссе", "Митино", "Волоколамская", "Мякинино", "Строгино", "Крылатское", "Молодёжная", "Кунцевская", "Славянский бульвар", "Парк Победы", "Киевская", "Смоленская", "Арбатская", "Площадь Революции", "Курская", "Бауманская", "Электрозаводская", "Семёновская", "Партизанская", "Измайловская", "Первомайская", "Щёлковская"],
+    "4": ["Кунцевская", "Пионерская", "Филёвский парк", "Багратионовская", "Фили", "Кутузовская", "Студенческая", "Смоленская", "Арбатская", "Александровский сад"],
+    "5": ["Киевская", "Краснопресненская", "Белорусская", "Новослободская", "Проспект Мира", "Комсомольская", "Курская", "Таганская", "Павелецкая", "Добрынинская", "Октябрьская", "Парк культуры"],
+    "6": ["Новоясеневская", "Ясенево", "Тёплый стан", "Коньково", "Беляево", "Калужская", "Новые Черёмушки", "Профсоюзная", "Академическая", "Ленинский проспект", "Шаболовская", "Октябрьская", "Третьяковская"],
+    "7": ["Котельники", "Жулебино", "Лермонтовский проспект", "Выхино", "Рязанский проспект", "Кузьминки", "Текстильщики", "Волгоградский проспект", "Пролетарская", "Таганская", "Китай-город", "Кузнецкий мост", "Пушкинская", "Баррикадная", "Улица 1905 года", "Беговая", "Полежаевская", "Октябрьское поле", "Щукинская", "Спартак", "Тушинская", "Сходненская", "Планерная"],
+    "8": ["Саларьево", "Филатов луг", "Прокшино", "Ольховая", "Коммунарка"],
+    "8A": ["Рассказовка", "Новопеределкино", "Боровское шоссе", "Солнцево", "Говорово", "Озёрная", "Мичуринский проспект", "Раменки", "Ломоносовский проспект", "Минская", "Парк Победы"],
+    "9": ["Алтуфьево", "Бибирево", "Отрадное", "Владыкино", "Петровско-Разумовская", "Тимирязевская", "Дмитровская", "Савёловская", "Менделеевская", "Цветной бульвар", "Чеховская", "Боровицкая", "Полянка", "Серпуховская", "Тульская", "Нагатинская", "Нагорная", "Нахимовский проспект", "Севастопольская", "Чертановская", "Южная", "Пражская", "Улица Академика Янгеля", "Аннино", "Бульвар Дмитрия Донского"],
+    "10": ["Медведково", "Бабушкинская", "Свиблово", "Ботанический сад", "ВДНХ", "Алексеевская", "Рижская", "Проспект Мира", "Сухаревская", "Тургеневская", "Чкаловская", "Римская", "Крестьянская застава", "Дубровка", "Кожуховская", "Печатники", "Волжская", "Люблино", "Братиславская", "Марьино", "Борисово", "Шипиловская", "Зябликово"],
+    "11": ["Кунцевская", "Можайская", "Аминьевская", "Давыдково", "Плющево", "Терехово", "Народное Ополчение", "Хорошёвская", "ЦСКА", "Петровский парк", "Савёловская", "Рижская", "Сокольники", "Электрозаводская", "Лефортово", "Авиамоторная", "Нижегородская", "Текстильщики", "Печатники", "Кленовый бульвар", "Каширская", "Варшавская", "Каховская"],
+    "12": ["Савёловская", "Петровский парк", "ЦСКА", "Хорошёвская", "Шелепиха", "Деловой центр"],
+    "14": ["Деловой центр", "Шелепиха", "Хорошёвская", "ЦСКА", "Петровский парк", "Савёловская", "Рижская", "Сокольники", "Электрозаводская", "Лефортово", "Авиамоторная", "Нижегородская", "Текстильщики", "Печатники", "Кленовый бульвар", "Каширская", "Варшавская", "Каховская"],
+    "15": ["Народное Ополчение", "Мнёвники", "Терехово", "Кунцевская"],
+    "D1": ["Генерала Карбышева", "Фили", "Офисная", "Тестовская", "Савёловская", "Останкино", "Ростокино", "Белокаменная", "Лосиноостровская", "Ярославская", "Мытищи", "Перловская", "Тайнинская", "Лось", "Бабушкинская", "Свиблово"],
+    "D2": ["Апрелевка", "Победа", "Крекшино", "Санино", "Толстопальцево", "Внуково", "Мичуринец", "Переделкино", "Солнечная", "Очаково", "Матвеевская", "Аминьевская", "Кунцевская", "Славянский бульвар", "Фили", "Тестовская", "Белорусская", "Савёловская"],
+    "D3": ["Крюково", "Фирсановская", "Сходня", "Подрезково", "Лобня", "Шереметьевская", "Хлебниково", "Долгопрудная", "Марк", "Лианозово", "Бескудниково", "Окружная", "Савёловская"],
+    "D4": ["Железнодорожная", "Реутов", "Новогиреево", "Перово", "Кусково", "Нижегородская", "Серп и Молот", "Курская", "Москва-Товарная", "Каланчёвская", "Рижская", "Останкино", "Ростокино", "Белокаменная"]
+  };
+let currentCategory = "mcd";
+  const stations = [];
 
-function buildStations() {
-    stations = [];
+  function buildStations() {
+    stations.length = 0;
 
     for (const [line, list] of Object.entries(data)) {
-        const isMCD = line.startsWith("D");
-        if ((currentCategory === "mcd" && isMCD) || (currentCategory === "metro" && !isMCD)) {
-            list.forEach(name => {
-                stations.push({
-                    name: `${name} ${isMCD ? "· Линия " : ""}${line}`,
-                    icon: `img/${line}.svg`,
-                    lineId: line
-                });
-            });
-        }
+      const isMCD = line.startsWith('D');
+
+      if ((currentCategory === "mcd" && isMCD) ||
+          (currentCategory === "metro" && !isMCD)) {
+
+        list.forEach(name => {
+          stations.push({
+            name: `${name} ${isMCD ? ' · Линия ' : ''}${line}`,
+            icon: `img/${line}.svg`,
+            lineId: line
+          });
+        });
+      }
     }
-}
+  }
 
-buildStations();
+  buildStations();
 
-// ==========================
-//   РЕНДЕР DROPDOWN
-// ==========================
-function renderDropdown(value) {
+  const searchInput = document.getElementById('station-search');
+  const dropdown = document.getElementById('custom-stations-list');
+  let selected = "";
+
+  // ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК
+  window.switchCategory = function(cat) {
+    if (currentCategory === cat) return;
+    currentCategory = cat;
+
+    // Двигаем ползунок
+    document.getElementById('tabs-container')
+      .classList.toggle('metro-active', cat === 'metro');
+
+    document.getElementById('tab-mcd')
+      .classList.toggle('active', cat === 'mcd');
+
+    document.getElementById('tab-metro')
+      .classList.toggle('active', cat === 'metro');
+
+    // Сбрасываем UI
+    searchInput.value = "";
+    selected = "";
+    document.documentElement.style.setProperty('--primary-color', '#005AAB');
+    dropdown.classList.remove('active');
+
+    buildStations(); // Пересобираем список станций
+    tg.HapticFeedback.impactOccurred('light');
+  };
+
+  function render(val) {
     dropdown.innerHTML = "";
 
-    if (!value.trim()) {
-        dropdown.classList.remove("active");
-        return;
-    }
-
     const filtered = stations
-        .filter(s => s.name.toLowerCase().includes(value.toLowerCase()))
-        .slice(0, 15);
+      .filter(s => s.name.toLowerCase().includes(val.toLowerCase()))
+      .slice(0, 15);
 
-    if (filtered.length === 0) {
-        dropdown.classList.remove("active");
-        return;
+    if (filtered.length === 0 || val === "") {
+      dropdown.classList.remove('active');
+      return;
     }
 
-    filtered.forEach(st => {
-        const item = document.createElement("div");
-        item.className = "dropdown-item";
-        item.innerHTML = `
-            <div class="icon-box">
-                <img src="${st.icon}" onerror="this.src='img/metro.svg'">
-            </div>
-            <div class="name">${st.name}</div>
-        `;
+    filtered.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'dropdown-item';
 
-        item.onclick = () => {
-            selectedStation = st.name;
-            searchInput.value = st.name;
-            dropdown.classList.remove("active");
+      div.innerHTML = `
+        <div class="icon-box">
+          <img src="${s.icon}" onerror="this.src='img/metro.svg'">
+        </div>
+        <div class="name">${s.name}</div>
+      `;
 
-            const color = lineColors[st.lineId] || "#005AAB";
-            document.documentElement.style.setProperty("--primary-color", color);
+      div.onclick = () => {
+        searchInput.value = s.name;
+        selected = s.name;
+        dropdown.classList.remove('active');
 
-            tg.HapticFeedback.impactOccurred("light");
-        };
+        const newColor = lineColors[s.lineId] || '#005AAB';
+        document.documentElement.style
+          .setProperty('--primary-color', newColor);
 
-        dropdown.appendChild(item);
+        tg.HapticFeedback.impactOccurred('light');
+      };
+
+      dropdown.appendChild(div);
     });
 
-    dropdown.classList.add("active");
-}
+    dropdown.classList.add('active');
+  }
 
-// ==========================
-//   DEBOUNCE ПОИСКА
-// ==========================
-searchInput.addEventListener("input", e => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        renderDropdown(e.target.value);
-    }, 120);
-});
+  searchInput.oninput = (e) => render(e.target.value);
 
-// Закрытие dropdown при клике вне
-document.addEventListener("click", e => {
-    if (!dropdown.contains(e.target) && e.target !== searchInput) {
-        dropdown.classList.remove("active");
-    }
-});
+  document.onclick = (e) => {
+    if (e.target !== searchInput)
+      dropdown.classList.remove('active');
+  };
+document.getElementById('submit-btn').onclick = function() {
+    const desc = document.getElementById('description').value.trim();
 
-// ==========================
-//   ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
-// ==========================
-window.switchCategory = function(cat) {
-    if (currentCategory === cat) return;
-
-    currentCategory = cat;
-    selectedStation = "";
-    searchInput.value = "";
-
-    document.getElementById("tabs-container").classList.toggle("metro-active", cat === "metro");
-    document.getElementById("tab-mcd").classList.toggle("active", cat === "mcd");
-    document.getElementById("tab-metro").classList.toggle("active", cat === "metro");
-
-    document.documentElement.style.setProperty("--primary-color", "#005AAB");
-
-    buildStations();
-    dropdown.classList.remove("active");
-
-    tg.HapticFeedback.impactOccurred("light");
-};
-
-// ==========================
-//   ОТПРАВКА ДАННЫХ
-// ==========================
-submitBtn.onclick = () => {
-    const desc = document.getElementById("description").value.trim();
-
-    if (!desc || !selectedStation) {
-        tg.HapticFeedback.notificationOccurred("error");
-        tg.showAlert("Выберите станцию и опишите проблему");
-        return;
+    if (!desc || !selected) {
+      tg.HapticFeedback.notificationOccurred('error');
+      tg.showAlert("Выберите станцию и опишите проблему");
+      return;
     }
 
-    // Блокируем повторное нажатие
-    submitBtn.disabled = true;
+    const btn = this;
+    btn.classList.add('train-depart');
+    tg.HapticFeedback.impactOccurred('heavy');
 
-    submitBtn.classList.add("train-depart");
-    tg.HapticFeedback.impactOccurred("heavy");
-
-    // Анимация вибрации поезда
     const delays = [400, 350, 300, 250, 200, 150, 120, 100, 80, 60, 50, 40, 30, 20, 10, 0];
     let step = 0;
 
-    function clack() {
-        if (step < delays.length) {
-            tg.HapticFeedback.impactOccurred(step % 2 === 0 ? "rigid" : "medium");
-            setTimeout(clack, delays[step]);
-            step++;
-        }
+    function clackTrain() {
+      if (step < delays.length) {
+        let impactType = step % 2 === 0 ? 'rigid' : 'medium';
+        tg.HapticFeedback.impactOccurred(impactType);
+        setTimeout(clackTrain, delays[step]);
+        step++;
+      }
     }
 
-    setTimeout(clack, 350);
+    setTimeout(clackTrain, 350);
 
     setTimeout(() => {
-        tg.HapticFeedback.notificationOccurred("success");
-        tg.sendData(JSON.stringify({
-            station: selectedStation,
-            description: desc,
-            category: currentCategory
-        }));
-        tg.close();
+      tg.HapticFeedback.notificationOccurred('success');
+
+      // ОТПРАВЛЯЕМ МАТЕРИАЛ БОТУ, ЧТОБЫ ОН ЗНАЛ КУДА ПЕРЕСЛАТЬ (mcd или metro)
+      tg.sendData(JSON.stringify({
+        station: selected,
+        description: desc,
+        category: currentCategory
+      }));
+
+      tg.close();
     }, 3800);
-};
+  };
 </script>
+</body>
+</html>
